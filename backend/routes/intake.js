@@ -1,110 +1,93 @@
-// routes/intake.js — handles all requests to /api/intake
-//
-// CONCEPT: What is a Route?
-// ─────────────────────────
-// A route is like a specific desk in an office.
-// When a request comes in to /api/intake, Express sends it here.
-// This file decides what to do based on the HTTP method:
-//   POST → someone is submitting new data (patient submitting the form)
-//   GET  → someone is requesting existing data (doctor loading the dashboard)
-//
-// HTTP Methods in plain English:
-//   POST = "here is new data, please save it"
-//   GET  = "please give me some data"
-//   PUT  = "please update this existing data"
-//   DELETE = "please delete this data"
+// backend/routes/intake.js
+// ─────────────────────────────────────────────────────────────────────────────
+// MediTriage — Intake Routes
+// POST /api/intake  → save form, run AI triage, update record, return result
+// GET  /api/intake  → fetch all submissions (for admin/review)
+// ─────────────────────────────────────────────────────────────────────────────
 
-import express from 'express';
-import Intake from '../models/Intake.js'; // import our blueprint/model
+import express from "express";
+import Intake from "../models/Intake.js";
+import { runTriageAgent } from "../services/triageAgent.js"; // ← NEW
 
 const router = express.Router();
-// Router is a mini Express app — it handles routes just for /api/intake
 
-
-// ── POST /api/intake ────────────────────────────────────────────
-// Called when a patient submits the intake form
-// async/await means: "wait for the database operation to finish before continuing"
-router.post('/', async (req, res) => {
+// ── POST /api/intake ─────────────────────────────────────────────────────────
+// Called when a patient submits the intake form.
+// Flow: validate → save to MongoDB → run AI triage → update record → respond
+// ─────────────────────────────────────────────────────────────────────────────
+router.post("/", async (req, res) => {
   try {
-    // req.body contains the JSON data sent from the React frontend
-    // We destructure it — pulling out each field by name
-    const {
-      firstName, lastName, dateOfBirth, email, phone,
-      chiefComplaint,
-      symptoms, symptomDuration, painLevel,
-      existingConditions, allergies, currentMedications,
-    } = req.body;
+    // STEP 1 — Save the raw intake form data first.
+    // We save immediately (before AI) so that even if the AI call fails,
+    // the patient's data is never lost. Good defensive practice.
+    const intake = new Intake(req.body);
+    await intake.save();
 
-    // Basic validation — if required fields are missing, stop and return an error
-    // 400 = "Bad Request" — the client sent incomplete data
-    if (!firstName || !lastName || !email || !chiefComplaint) {
-      return res.status(400).json({ message: 'Missing required fields' });
+    // STEP 2 — Run the AI triage agent.
+    // Pass the full intake object. runTriageAgent() sends it to Groq
+    // and returns { urgency, urgencyReason, doctorSummary, extractedData }.
+    // This await will pause for ~1-2 seconds while Groq responds.
+    let triageResult;
+    try {
+      triageResult = await runTriageAgent(req.body);
+    } catch (aiError) {
+      // If the AI call fails (e.g. Groq is down, API key invalid),
+      // we still return a 201 success — the patient data WAS saved.
+      // We just flag that triage didn't complete so staff can follow up manually.
+      console.error("Triage agent failed:", aiError.message);
+      return res.status(201).json({
+        message: "Intake saved, but AI triage failed. Manual review needed.",
+        data: intake,
+        triageError: aiError.message,
+      });
     }
 
-    // Create a new Intake document using our schema
-    // This is like filling out a form using the template
-    const newIntake = new Intake({
-      firstName, lastName, dateOfBirth, email, phone,
-      chiefComplaint,
-      symptoms,
-      symptomDuration,
-      painLevel: Number(painLevel), // convert to number in case it came as a string
-      existingConditions,
-      allergies,
-      currentMedications,
-    });
+    // STEP 3 — Update the MongoDB document with the AI results.
+    // intake._id is the unique ID MongoDB assigned when we saved in Step 1.
+    // findByIdAndUpdate() finds that exact record and patches only these fields.
+    // { new: true } means "return the updated document" (not the old one).
+    const updated = await Intake.findByIdAndUpdate(
+      intake._id,
+      {
+        urgency:       triageResult.urgency,
+        urgencyReason: triageResult.urgencyReason,
+        doctorSummary: triageResult.doctorSummary,
+        extractedData: triageResult.extractedData,
+      },
+      { new: true }
+    );
 
-    // .save() writes the document to MongoDB Atlas
-    // await means: wait here until MongoDB confirms it's saved
-    await newIntake.save();
-
-    // 201 = "Created" — the standard success code when new data is saved
-    res.status(201).json({
-      message: 'Intake submitted successfully',
-      intake: newIntake,
+    // STEP 4 — Send the fully triaged record back to the frontend.
+    // HTTP 201 = "Created" — the standard status code for a successful POST
+    // that resulted in a new resource being created.
+    return res.status(201).json({
+      message: "Intake saved and triaged successfully.",
+      data: updated,
     });
 
   } catch (err) {
-    // If anything goes wrong (DB error, validation error etc.)
-    // 500 = "Internal Server Error"
-    console.error('Error saving intake:', err.message);
-    res.status(500).json({ message: 'Server error', error: err.message });
+    // This catches unexpected errors (e.g. MongoDB connection issue, bad schema).
+    console.error("POST /api/intake error:", err.message);
+    return res.status(500).json({
+      message: "Server error. Could not save intake.",
+      error: err.message,
+    });
   }
 });
 
-
-// ── GET /api/intake ─────────────────────────────────────────────
-// Returns ALL intake submissions — used by the doctor dashboard in Phase 3
-// We add it now so it's ready, even though the dashboard isn't built yet
-router.get('/', async (req, res) => {
+// ── GET /api/intake ──────────────────────────────────────────────────────────
+// Returns all intake submissions, newest first.
+// Useful for an admin dashboard or quick testing in the browser.
+// ─────────────────────────────────────────────────────────────────────────────
+router.get("/", async (req, res) => {
   try {
-    // .find() with no arguments = get everything
-    // .sort({ createdAt: -1 }) = newest first (-1 means descending)
+    // -1 = descending order (newest first). 1 would be ascending (oldest first).
     const intakes = await Intake.find().sort({ createdAt: -1 });
-    res.json(intakes);
+    return res.status(200).json({ data: intakes });
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    console.error("GET /api/intake error:", err.message);
+    return res.status(500).json({ message: "Could not fetch intakes.", error: err.message });
   }
 });
-
-
-// ── GET /api/intake/:id ─────────────────────────────────────────
-// Returns ONE intake by its MongoDB ID
-// :id is a URL parameter — e.g. /api/intake/64abc123...
-// Used in Phase 3 when a doctor clicks on a specific patient
-router.get('/:id', async (req, res) => {
-  try {
-    // req.params.id captures the :id part of the URL
-    const intake = await Intake.findById(req.params.id);
-
-    // If no intake found with that ID, return 404 Not Found
-    if (!intake) return res.status(404).json({ message: 'Intake not found' });
-
-    res.json(intake);
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
-  }
-});
-
 
 export default router;

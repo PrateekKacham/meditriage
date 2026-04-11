@@ -48,7 +48,7 @@ const IntakeSchema = new mongoose.Schema(
 
     // ── AI triage fields (used in Phase 2) ────────────────
     // These are all null in Phase 1 — Claude will fill them in Phase 2
-    urgency:       { type: String, enum: ['low', 'medium', 'high'], default: null },
+    urgency:       { type: String, enum: ['Emergency', 'Urgent', 'Semi-Urgent', 'Non-Urgent'], default: null },
     urgencyReason: { type: String, default: null }, // one sentence explaining why
     doctorSummary: { type: String, default: null }, // paragraph Claude generates
     extractedData: { type: mongoose.Schema.Types.Mixed, default: null }, // Claude's full JSON

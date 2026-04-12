@@ -65,6 +65,12 @@ export default function Dashboard() {
   const [urgencyFilter, setUrgencyFilter] = useState('All');
   const [statusFilter, setStatusFilter]   = useState('All');
   const [sortBy, setSortBy]               = useState('newest');
+  const [currentPage, setCurrentPage]     = useState(1);
+  const PATIENTS_PER_PAGE = 8;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, urgencyFilter, statusFilter, sortBy]);
 
   useEffect(() => {
     fetch(`${API}/api/intake`)
@@ -169,6 +175,12 @@ export default function Dashboard() {
     return new Date(b.createdAt) - new Date(a.createdAt);
   });
 
+  const totalPages = Math.ceil(sorted.length / PATIENTS_PER_PAGE);
+  const paginated = sorted.slice(
+    (currentPage - 1) * PATIENTS_PER_PAGE,
+    currentPage * PATIENTS_PER_PAGE
+  );
+
   return (
     <div className="min-h-screen bg-gray-50">
 
@@ -256,7 +268,7 @@ export default function Dashboard() {
 
         {/* ── Patient cards ── */}
         <div className="flex flex-col gap-3">
-          {sorted.map(patient => {
+          {paginated.map(patient => {
             const isExpanded   = expandedId === patient._id;
             const borderCls    = URGENCY_LEFT_BORDER[patient.urgency] ?? 'border-l-4 border-gray-300';
             const badgeCls     = URGENCY_BADGE[patient.urgency]       ?? 'bg-gray-100 text-gray-700 border border-gray-300';
@@ -375,6 +387,55 @@ export default function Dashboard() {
             <p className="text-sm text-gray-500">
               {searchQuery ? 'No patients match your search.' : 'No patients on record yet.'}
             </p>
+          )}
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+              <p className="text-sm text-gray-500">
+                Showing {(currentPage - 1) * PATIENTS_PER_PAGE + 1}–{Math.min(currentPage * PATIENTS_PER_PAGE, sorted.length)} of {sorted.length} patients
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className={`px-3 py-1.5 rounded-lg text-sm border transition-colors cursor-pointer
+                    ${currentPage === 1
+                      ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    }`}
+                >
+                  ← Prev
+                </button>
+
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`w-8 h-8 rounded-lg text-sm border transition-colors cursor-pointer
+                        ${page === currentPage
+                          ? 'bg-blue-600 text-white border-blue-600 font-medium'
+                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                        }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className={`px-3 py-1.5 rounded-lg text-sm border transition-colors cursor-pointer
+                    ${currentPage === totalPages
+                      ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    }`}
+                >
+                  Next →
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>

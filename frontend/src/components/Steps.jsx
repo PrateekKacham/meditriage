@@ -1,43 +1,19 @@
 // src/components/Steps.jsx
 import { useState, useEffect } from 'react';
-// Contains all 4 form steps + the Confirmation screen
-//
-// CONCEPT: Props
-// ──────────────
-// Props (short for "properties") are how a parent component passes
-// data and functions DOWN to a child component.
-// Think of props like arguments to a function:
-//   function StepOne({ data, update, onNext })
-//   data   → the current form values (read only)
-//   update → a function to change form values
-//   onNext → a function to go to the next step
-// The child component CANNOT directly modify the parent's state.
-// It can only call update() and ask the parent to change it.
-// This is called "one-way data flow" and is a core React principle.
 
-// Shared styles used across all step components
-// Defined once here so we don't repeat ourselves (DRY principle)
-const styles = {
-  stepTitle: { fontSize: 18, fontWeight: 600, marginBottom: 20, color: '#111827' },
-  field:     { marginBottom: 16 },
-  label:     { display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 6 },
-  input:     {
-    width: '100%', padding: '8px 12px', borderRadius: 6, fontSize: 14,
-    border: '1px solid #d1d5db', boxSizing: 'border-box', outline: 'none',
-    fontFamily: 'inherit',
-  },
-  row:        { display: 'flex', gap: 12 },
-  navRow:     { display: 'flex', justifyContent: 'space-between', marginTop: 24 },
-  btnPrimary: {
-    background: '#2563eb', color: '#fff', border: 'none',
-    padding: '10px 24px', borderRadius: 6, fontSize: 14,
-    cursor: 'pointer', fontWeight: 500,
-  },
-  btnSecondary: {
-    background: '#fff', color: '#374151', border: '1px solid #d1d5db',
-    padding: '10px 24px', borderRadius: 6, fontSize: 14, cursor: 'pointer',
-  },
-};
+const COMMON_SYMPTOMS = [
+  'Headache', 'Fever', 'Cough', 'Shortness of breath',
+  'Chest pain', 'Nausea', 'Fatigue', 'Dizziness',
+  'Sore throat', 'Muscle aches', 'Loss of appetite', 'Chills',
+];
+
+// Shared Tailwind class strings
+const inputCls  = 'border border-gray-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm';
+const labelCls  = 'block text-sm font-medium text-gray-700 mb-1';
+const fieldCls  = 'mb-4';
+const btnNext   = 'bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg cursor-pointer';
+const btnBack   = 'border border-gray-300 text-gray-600 hover:bg-gray-50 px-6 py-2 rounded-lg cursor-pointer';
+const navRowCls = 'flex justify-between mt-6';
 
 
 // ─────────────────────────────────────────────────────────
@@ -46,36 +22,31 @@ const styles = {
 export function StepOne({ data, update, onNext }) {
 
   const handleNext = () => {
-    // Validate before allowing the user to proceed
     if (!data.firstName || !data.lastName || !data.email) {
       alert('Please fill in your first name, last name, and email');
-      return; // stop here — don't call onNext()
+      return;
     }
-    onNext(); // tell App.jsx to move to step 2
+    onNext();
   };
 
   return (
     <div>
-      <h2 style={styles.stepTitle}>Personal information</h2>
+      <h2 className="text-lg font-semibold text-gray-900 mb-5">Personal information</h2>
 
-      {/* Two fields side by side using flexbox */}
-      <div style={styles.row}>
-        <div style={{ ...styles.field, flex: 1 }}>
-          <label style={styles.label}>First name *</label>
-          {/* onChange fires every time the user types a character
-              e.target.value is the current value of the input field
-              update() merges { firstName: '...' } into the parent's formData */}
+      <div className="flex gap-3 mb-4">
+        <div className="flex-1">
+          <label className={labelCls}>First name *</label>
           <input
-            style={styles.input}
+            className={inputCls}
             value={data.firstName}
             onChange={e => update({ firstName: e.target.value })}
             placeholder="Jane"
           />
         </div>
-        <div style={{ ...styles.field, flex: 1 }}>
-          <label style={styles.label}>Last name *</label>
+        <div className="flex-1">
+          <label className={labelCls}>Last name *</label>
           <input
-            style={styles.input}
+            className={inputCls}
             value={data.lastName}
             onChange={e => update({ lastName: e.target.value })}
             placeholder="Doe"
@@ -83,31 +54,31 @@ export function StepOne({ data, update, onNext }) {
         </div>
       </div>
 
-      <div style={styles.field}>
-        <label style={styles.label}>Date of birth *</label>
+      <div className={fieldCls}>
+        <label className={labelCls}>Date of birth *</label>
         <input
           type="date"
-          style={styles.input}
+          className={inputCls}
           value={data.dateOfBirth}
           onChange={e => update({ dateOfBirth: e.target.value })}
         />
       </div>
 
-      <div style={styles.field}>
-        <label style={styles.label}>Email *</label>
+      <div className={fieldCls}>
+        <label className={labelCls}>Email *</label>
         <input
           type="email"
-          style={styles.input}
+          className={inputCls}
           value={data.email}
           onChange={e => update({ email: e.target.value })}
           placeholder="jane@example.com"
         />
       </div>
 
-      <div style={styles.field}>
-        <label style={styles.label}>Phone</label>
+      <div className={fieldCls}>
+        <label className={labelCls}>Phone</label>
         <input
-          style={styles.input}
+          className={inputCls}
           value={data.phone}
           onChange={e => {
             const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
@@ -125,9 +96,8 @@ export function StepOne({ data, update, onNext }) {
         />
       </div>
 
-      {/* Only a Next button on step 1 — no Back button */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 24 }}>
-        <button style={styles.btnPrimary} onClick={handleNext}>Next →</button>
+      <div className="flex justify-end mt-6">
+        <button className={btnNext} onClick={handleNext}>Next →</button>
       </div>
     </div>
   );
@@ -140,7 +110,7 @@ export function StepOne({ data, update, onNext }) {
 export function StepTwo({ data, update, onNext, onBack }) {
 
   const handleNext = () => {
-    if (!data.chiefComplaint.trim()) { // .trim() removes whitespace
+    if (!data.chiefComplaint.trim()) {
       alert('Please describe your main concern');
       return;
     }
@@ -149,22 +119,21 @@ export function StepTwo({ data, update, onNext, onBack }) {
 
   return (
     <div>
-      <h2 style={styles.stepTitle}>What brings you in today?</h2>
+      <h2 className="text-lg font-semibold text-gray-900 mb-5">What brings you in today?</h2>
 
-      <div style={styles.field}>
-        <label style={styles.label}>Main concern *</label>
-        {/* textarea for longer text input */}
+      <div className={fieldCls}>
+        <label className={labelCls}>Main concern *</label>
         <textarea
-          style={{ ...styles.input, height: 120, resize: 'vertical' }}
+          className={`${inputCls} h-28 resize-y`}
           value={data.chiefComplaint}
           onChange={e => update({ chiefComplaint: e.target.value })}
           placeholder="Describe your main symptom or reason for visiting..."
         />
       </div>
 
-      <div style={styles.navRow}>
-        <button style={styles.btnSecondary} onClick={onBack}>← Back</button>
-        <button style={styles.btnPrimary}   onClick={handleNext}>Next →</button>
+      <div className={navRowCls}>
+        <button className={btnBack} onClick={onBack}>← Back</button>
+        <button className={btnNext} onClick={handleNext}>Next →</button>
       </div>
     </div>
   );
@@ -174,48 +143,35 @@ export function StepTwo({ data, update, onNext, onBack }) {
 // ─────────────────────────────────────────────────────────
 // STEP 3 — Symptoms
 // ─────────────────────────────────────────────────────────
-// A list of common symptoms the patient can toggle on/off
-const COMMON_SYMPTOMS = [
-  'Headache', 'Fever', 'Cough', 'Shortness of breath',
-  'Chest pain', 'Nausea', 'Fatigue', 'Dizziness',
-  'Sore throat', 'Muscle aches', 'Loss of appetite', 'Chills',
-];
-
 export function StepThree({ data, update, onNext, onBack }) {
 
-  // Toggle a symptom in/out of the symptoms array
   const toggleSymptom = (symptom) => {
     const alreadySelected = data.symptoms.includes(symptom);
     update({
       symptoms: alreadySelected
-        ? data.symptoms.filter(s => s !== symptom) // remove it
-        : [...data.symptoms, symptom],              // add it (spread keeps existing items)
+        ? data.symptoms.filter(s => s !== symptom)
+        : [...data.symptoms, symptom],
     });
   };
 
   return (
     <div>
-      <h2 style={styles.stepTitle}>Symptoms</h2>
+      <h2 className="text-lg font-semibold text-gray-900 mb-5">Symptoms</h2>
 
-      <div style={styles.field}>
-        <label style={styles.label}>Select all that apply</label>
-        {/* Symptom toggle buttons */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+      <div className={fieldCls}>
+        <label className={labelCls}>Select all that apply</label>
+        <div className="flex flex-wrap gap-2 mt-2">
           {COMMON_SYMPTOMS.map(sym => {
             const selected = data.symptoms.includes(sym);
             return (
               <button
-                key={sym}        // key helps React track list items efficiently
+                key={sym}
                 onClick={() => toggleSymptom(sym)}
-                style={{
-                  padding: '6px 14px', borderRadius: 20, fontSize: 13,
-                  cursor: 'pointer', border: '1px solid',
-                  // Change appearance based on whether it's selected
-                  background:   selected ? '#2563eb' : '#fff',
-                  borderColor:  selected ? '#2563eb' : '#d1d5db',
-                  color:        selected ? '#fff'    : '#374151',
-                  fontWeight:   selected ? 500       : 400,
-                }}
+                className={`px-3.5 py-1.5 rounded-full text-sm border cursor-pointer transition-colors ${
+                  selected
+                    ? 'bg-blue-600 border-blue-600 text-white font-medium'
+                    : 'bg-white border-gray-300 text-gray-600 hover:border-blue-400 hover:text-blue-600'
+                }`}
               >
                 {sym}
               </button>
@@ -224,37 +180,36 @@ export function StepThree({ data, update, onNext, onBack }) {
         </div>
       </div>
 
-      <div style={styles.field}>
-        <label style={styles.label}>How long have you had these symptoms?</label>
+      <div className={fieldCls}>
+        <label className={labelCls}>How long have you had these symptoms?</label>
         <input
-          style={styles.input}
+          className={inputCls}
           value={data.symptomDuration}
           onChange={e => update({ symptomDuration: e.target.value })}
           placeholder="e.g. 3 days, 1 week, 2 months"
         />
       </div>
 
-      <div style={styles.field}>
-        <label style={styles.label}>
+      <div className={fieldCls}>
+        <label className={labelCls}>
           Pain / discomfort level:&nbsp;
-          <strong>{data.painLevel} / 10</strong>
+          <span className="font-semibold text-gray-900">{data.painLevel} / 10</span>
         </label>
-        {/* Range slider — value updates live as the user drags */}
         <input
           type="range" min={1} max={10} step={1}
-          style={{ width: '100%', marginTop: 8 }}
+          className="w-full mt-2 accent-blue-600"
           value={data.painLevel}
           onChange={e => update({ painLevel: Number(e.target.value) })}
         />
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#9ca3af' }}>
+        <div className="flex justify-between text-xs text-gray-400 mt-1">
           <span>1 — mild</span>
           <span>10 — severe</span>
         </div>
       </div>
 
-      <div style={styles.navRow}>
-        <button style={styles.btnSecondary} onClick={onBack}>← Back</button>
-        <button style={styles.btnPrimary}   onClick={onNext}>Next →</button>
+      <div className={navRowCls}>
+        <button className={btnBack} onClick={onBack}>← Back</button>
+        <button className={btnNext} onClick={onNext}>Next →</button>
       </div>
     </div>
   );
@@ -265,35 +220,24 @@ export function StepThree({ data, update, onNext, onBack }) {
 // STEP 4 — Medical history & submit
 // ─────────────────────────────────────────────────────────
 
-// TagInput — a reusable component for comma-separated list inputs
-// The user types "Diabetes, Asthma" and we split it into ["Diabetes", "Asthma"]
-// CONCEPT: Reusable components
-// Instead of repeating the same input 3 times, we define it once
-// and reuse it with different props — same idea as a function
 function TagInput({ label, value, onChange, placeholder }) {
-  // Store the raw string locally while the user is typing.
-  // Splitting on every keystroke caused the cursor to jump when typing spaces.
   const [raw, setRaw] = useState(value.join(', '));
 
-  // Sync inward when the parent resets or pre-fills the value array.
   useEffect(() => {
     setRaw(value.join(', '));
   }, [value]);
 
   return (
-    <div style={styles.field}>
-      <label style={styles.label}>{label}</label>
+    <div className={fieldCls}>
+      <label className={labelCls}>{label}</label>
       <input
-        style={styles.input}
+        className={inputCls}
         value={raw}
         onChange={e => setRaw(e.target.value)}
-        // Only convert to array and notify the parent when the user leaves the field.
         onBlur={() => onChange(raw.split(',').map(s => s.trim()).filter(Boolean))}
         placeholder={placeholder}
       />
-      <p style={{ fontSize: 12, color: '#9ca3af', margin: '4px 0 0' }}>
-        Separate multiple entries with commas
-      </p>
+      <p className="text-xs text-gray-400 mt-1">Separate multiple entries with commas</p>
     </div>
   );
 }
@@ -301,7 +245,7 @@ function TagInput({ label, value, onChange, placeholder }) {
 export function StepFour({ data, update, onBack, onSubmit, isSubmitting }) {
   return (
     <div>
-      <h2 style={styles.stepTitle}>Medical history</h2>
+      <h2 className="text-lg font-semibold text-gray-900 mb-5">Medical history</h2>
 
       <TagInput
         label="Existing conditions"
@@ -322,12 +266,12 @@ export function StepFour({ data, update, onBack, onSubmit, isSubmitting }) {
         placeholder="e.g. Metformin 500mg, Lisinopril 10mg"
       />
 
-      <div style={styles.navRow}>
-        <button style={styles.btnSecondary} onClick={onBack}>← Back</button>
+      <div className={navRowCls}>
+        <button className={btnBack} onClick={onBack}>← Back</button>
         <button
-          style={{ ...styles.btnPrimary, opacity: isSubmitting ? 0.6 : 1 }}
+          className={`${btnNext} ${isSubmitting ? 'opacity-60 cursor-not-allowed' : ''}`}
           onClick={onSubmit}
-          disabled={isSubmitting} // prevents double-clicking
+          disabled={isSubmitting}
         >
           {isSubmitting ? 'Submitting...' : 'Submit intake'}
         </button>
@@ -342,44 +286,25 @@ export function StepFour({ data, update, onBack, onSubmit, isSubmitting }) {
 // ─────────────────────────────────────────────────────────
 export function Confirmation({ formData }) {
   return (
-    <div style={{ textAlign: 'center', padding: '2rem 0' }}>
+    <div className="text-center py-6">
 
-      {/* Checkmark circle */}
-      <div style={{
-        width: 64, height: 64, borderRadius: '50%',
-        background: '#dcfce7', display: 'flex',
-        alignItems: 'center', justifyContent: 'center',
-        margin: '0 auto 1rem', fontSize: 28,
-      }}>
+      {/* Green checkmark circle */}
+      <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4 text-3xl text-green-600">
         ✓
       </div>
 
-      <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>
-        Intake submitted!
-      </h2>
-      <p style={{ color: '#6b7280', marginBottom: 24 }}>
-        Thank you, <strong>{formData.firstName}</strong>. Your intake has been received.
+      <h2 className="text-xl font-semibold text-gray-900 mb-2">Intake submitted!</h2>
+      <p className="text-sm text-gray-500 mb-6">
+        Thank you, <strong className="text-gray-700">{formData.firstName}</strong>. Your intake has been received.
         A member of our team will review your information before your appointment.
       </p>
 
       {/* Summary card */}
-      <div style={{
-        background: '#f9fafb', border: '1px solid #e5e7eb',
-        borderRadius: 8, padding: '1rem 1.25rem',
-        textAlign: 'left', fontSize: 14, color: '#374151',
-      }}>
-        <p style={{ margin: '0 0 8px' }}>
-          <strong>Main concern:</strong> {formData.chiefComplaint}
-        </p>
-        <p style={{ margin: '0 0 8px' }}>
-          <strong>Symptoms:</strong> {formData.symptoms.length > 0 ? formData.symptoms.join(', ') : 'None selected'}
-        </p>
-        <p style={{ margin: '0 0 8px' }}>
-          <strong>Pain level:</strong> {formData.painLevel} / 10
-        </p>
-        <p style={{ margin: 0 }}>
-          <strong>Duration:</strong> {formData.symptomDuration || 'Not specified'}
-        </p>
+      <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 text-left text-sm text-gray-700 space-y-2">
+        <p><strong className="text-gray-900">Main concern:</strong> {formData.chiefComplaint}</p>
+        <p><strong className="text-gray-900">Symptoms:</strong> {formData.symptoms.length > 0 ? formData.symptoms.join(', ') : 'None selected'}</p>
+        <p><strong className="text-gray-900">Pain level:</strong> {formData.painLevel} / 10</p>
+        <p><strong className="text-gray-900">Duration:</strong> {formData.symptomDuration || 'Not specified'}</p>
       </div>
     </div>
   );

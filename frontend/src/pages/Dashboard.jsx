@@ -1,30 +1,36 @@
 // src/pages/Dashboard.jsx
 import { useState, useEffect } from 'react';
 
-const URGENCY_BADGE = {
-  'Emergency':   { background: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5' },
-  'Urgent':      { background: '#ffedd5', color: '#9a3412', border: '1px solid #fdba74' },
-  'Semi-Urgent': { background: '#fefce8', color: '#854d0e', border: '1px solid #fde047' },
-  'Non-Urgent':  { background: '#dcfce7', color: '#166534', border: '1px solid #86efac' },
+// Complete Tailwind class strings — must be full strings so Tailwind includes them
+const URGENCY_LEFT_BORDER = {
+  'Emergency':   'border-l-4 border-red-500',
+  'Urgent':      'border-l-4 border-orange-400',
+  'Semi-Urgent': 'border-l-4 border-yellow-400',
+  'Non-Urgent':  'border-l-4 border-green-500',
 };
 
-// Helper: join an array to a string, or show a fallback if empty/missing
+const URGENCY_BADGE = {
+  'Emergency':   'bg-red-100 text-red-800 border border-red-300',
+  'Urgent':      'bg-orange-100 text-orange-800 border border-orange-300',
+  'Semi-Urgent': 'bg-yellow-100 text-yellow-800 border border-yellow-300',
+  'Non-Urgent':  'bg-green-100 text-green-800 border border-green-300',
+};
+
 function joinOrFallback(arr, fallback = 'None reported') {
   return Array.isArray(arr) && arr.length > 0 ? arr.join(', ') : fallback;
 }
 
-// A single label + value row used in the expanded section
 function DetailRow({ label, value }) {
   return (
-    <p style={{ margin: '0 0 8px', fontSize: 14, color: '#374151' }}>
-      <strong style={{ color: '#111827' }}>{label}:</strong> {value}
+    <p className="text-sm text-gray-700 mb-2">
+      <strong className="text-gray-900">{label}:</strong> {value}
     </p>
   );
 }
 
 export default function Dashboard() {
-  const [patients, setPatients] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [patients, setPatients]   = useState([]);
+  const [loading, setLoading]     = useState(true);
   const [expandedId, setExpandedId] = useState(null);
 
   useEffect(() => {
@@ -41,141 +47,145 @@ export default function Dashboard() {
   }, []);
 
   if (loading) {
-    return <p style={{ fontFamily: 'sans-serif', padding: '2rem' }}>Loading patients...</p>;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-500 text-sm">Loading patients...</p>
+      </div>
+    );
   }
 
+  // Derived stats
+  const urgentCount  = patients.filter(p => p.urgency === 'Emergency' || p.urgency === 'Urgent').length;
+  const pendingCount = patients.filter(p => !p.status || p.status === 'pending').length;
+
   return (
-    <div style={{
-      maxWidth: 720,
-      margin: '2rem auto',
-      padding: '0 1rem',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-    }}>
+    <div className="min-h-screen bg-gray-50">
 
-      {/* ── Header ── */}
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>
-          Doctor Dashboard
-        </h1>
-        <p style={{ fontSize: 14, color: '#6b7280', margin: 0 }}>
-          {patients.length} {patients.length === 1 ? 'patient' : 'patients'} on record
-        </p>
-      </div>
+      {/* ── Navbar ── */}
+      <nav className="bg-blue-900 px-6 py-4 flex items-center justify-between shadow-md">
+        <div className="flex items-center gap-2">
+          <span className="text-white text-xl">✚</span>
+          <span className="text-white text-lg font-bold tracking-wide">MediTriage</span>
+        </div>
+        <span className="text-blue-200 text-sm font-medium">Doctor Dashboard</span>
+      </nav>
 
-      {/* ── Patient cards ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {patients.map(patient => {
-          const isExpanded = expandedId === patient._id;
-          const badgeStyle = URGENCY_BADGE[patient.urgency] ?? {
-            background: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db',
-          };
-          const submitted = patient.createdAt
-            ? new Date(patient.createdAt).toLocaleDateString('en-US', {
-                year: 'numeric', month: 'short', day: 'numeric',
-              })
-            : 'Unknown date';
+      <div className="max-w-3xl mx-auto px-4 py-8">
 
-          return (
-            <div
-              key={patient._id}
-              onClick={() => setExpandedId(isExpanded ? null : patient._id)}
-              style={{
-                border: '1px solid #e5e7eb',
-                borderRadius: 8,
-                padding: '16px 20px',
-                background: '#fff',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                cursor: 'pointer',
-              }}
-            >
-              {/* Name + urgency badge */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span style={{ fontWeight: 600, fontSize: 16, color: '#111827' }}>
-                  {patient.firstName} {patient.lastName}
-                </span>
-                <span style={{
-                  ...badgeStyle,
-                  fontSize: 12, fontWeight: 600,
-                  padding: '3px 10px', borderRadius: 12,
-                }}>
-                  {patient.urgency ?? 'Unknown'}
-                </span>
-              </div>
+        {/* ── Stats row ── */}
+        <div className="grid grid-cols-3 gap-4 mb-8">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 text-center">
+            <p className="text-3xl font-bold text-gray-900">{patients.length}</p>
+            <p className="text-xs text-gray-500 mt-1 uppercase tracking-wide">Total patients</p>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 text-center">
+            <p className="text-3xl font-bold text-red-600">{urgentCount}</p>
+            <p className="text-xs text-gray-500 mt-1 uppercase tracking-wide">Urgent / Emergency</p>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 text-center">
+            <p className="text-3xl font-bold text-yellow-500">{pendingCount}</p>
+            <p className="text-xs text-gray-500 mt-1 uppercase tracking-wide">Pending review</p>
+          </div>
+        </div>
 
-              {/* Chief complaint */}
-              <p style={{ margin: '0 0 8px', fontSize: 14, color: '#374151' }}>
-                <strong>Chief complaint:</strong> {patient.chiefComplaint || 'Not provided'}
-              </p>
+        {/* ── Patient cards ── */}
+        <div className="flex flex-col gap-3">
+          {patients.map(patient => {
+            const isExpanded   = expandedId === patient._id;
+            const borderCls    = URGENCY_LEFT_BORDER[patient.urgency] ?? 'border-l-4 border-gray-300';
+            const badgeCls     = URGENCY_BADGE[patient.urgency]       ?? 'bg-gray-100 text-gray-700 border border-gray-300';
+            const submitted    = patient.createdAt
+              ? new Date(patient.createdAt).toLocaleDateString('en-US', {
+                  year: 'numeric', month: 'short', day: 'numeric',
+                })
+              : 'Unknown date';
 
-              {/* Date submitted */}
-              <p style={{ margin: 0, fontSize: 12, color: '#9ca3af' }}>
-                Submitted {submitted}
-              </p>
+            return (
+              <div
+                key={patient._id}
+                onClick={() => setExpandedId(isExpanded ? null : patient._id)}
+                className={`bg-white rounded-xl shadow-sm ${borderCls} cursor-pointer hover:shadow-md transition-shadow`}
+              >
+                <div className="px-5 py-4">
 
-              {/* ── Expanded section ── */}
-              {isExpanded && (
-                <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #e5e7eb' }}>
-                  <DetailRow label="Urgency reason"       value={patient.urgencyReason        || 'Not available'} />
-                  <DetailRow label="Doctor summary"       value={patient.doctorSummary         || 'Not available'} />
-                  <DetailRow label="Symptoms"             value={joinOrFallback(patient.symptoms)} />
-                  <DetailRow label="Pain level"           value={patient.painLevel != null ? `${patient.painLevel} / 10` : 'Not provided'} />
-                  <DetailRow label="Symptom duration"     value={patient.symptomDuration       || 'Not provided'} />
-                  <DetailRow label="Existing conditions"  value={joinOrFallback(patient.existingConditions)} />
-                  <DetailRow label="Current medications"  value={joinOrFallback(patient.currentMedications)} />
-                  <DetailRow label="Allergies"            value={joinOrFallback(patient.allergies)} />
-
-                  {/* ── Status dropdown ── */}
-                  <div
-                    style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12, paddingTop: 12, borderTop: '1px solid #f3f4f6' }}
-                    onClick={e => e.stopPropagation()}
-                  >
-                    <label style={{ fontSize: 14, fontWeight: 600, color: '#111827', whiteSpace: 'nowrap' }}>
-                      Update status:
-                    </label>
-                    <select
-                      value={patient.status || 'pending'}
-                      onChange={e => {
-                        const newStatus = e.target.value;
-                        fetch(`http://localhost:5000/api/intake/${patient._id}/status`, {
-                          method: 'PATCH',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ status: newStatus }),
-                        })
-                          .then(res => res.json())
-                          .then(() => {
-                            setPatients(prev =>
-                              prev.map(p => p._id === patient._id ? { ...p, status: newStatus } : p)
-                            );
-                          })
-                          .catch(err => console.error('Failed to update status:', err));
-                      }}
-                      style={{
-                        padding: '5px 10px', borderRadius: 6, fontSize: 14,
-                        border: '1px solid #d1d5db', background: '#fff',
-                        cursor: 'pointer', outline: 'none',
-                      }}
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="seen">Seen</option>
-                      <option value="needs-follow-up">Needs follow-up</option>
-                    </select>
+                  {/* Name + urgency badge */}
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-semibold text-gray-900">{patient.firstName} {patient.lastName}</span>
+                    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${badgeCls}`}>
+                      {patient.urgency ?? 'Unknown'}
+                    </span>
                   </div>
-                </div>
-              )}
 
-              {/* "Click to expand" hint — only shown when collapsed */}
-              {!isExpanded && (
-                <div style={{ textAlign: 'right', marginTop: 8 }}>
-                  <span style={{ fontSize: 11, color: '#d1d5db' }}>Click to expand</span>
-                </div>
-              )}
-            </div>
-          );
-        })}
+                  {/* Chief complaint */}
+                  <p className="text-sm text-gray-700 mb-2">
+                    <strong>Chief complaint:</strong> {patient.chiefComplaint || 'Not provided'}
+                  </p>
 
-        {patients.length === 0 && (
-          <p style={{ color: '#6b7280', fontSize: 14 }}>No patients on record yet.</p>
-        )}
+                  {/* Date submitted */}
+                  <p className="text-xs text-gray-400">Submitted {submitted}</p>
+
+                  {/* ── Expanded section ── */}
+                  {isExpanded && (
+                    <div className="mt-4 pt-4 border-t border-gray-100">
+                      <DetailRow label="Urgency reason"      value={patient.urgencyReason       || 'Not available'} />
+                      <DetailRow label="Doctor summary"      value={patient.doctorSummary        || 'Not available'} />
+                      <DetailRow label="Symptoms"            value={joinOrFallback(patient.symptoms)} />
+                      <DetailRow label="Pain level"          value={patient.painLevel != null ? `${patient.painLevel} / 10` : 'Not provided'} />
+                      <DetailRow label="Symptom duration"    value={patient.symptomDuration      || 'Not provided'} />
+                      <DetailRow label="Existing conditions" value={joinOrFallback(patient.existingConditions)} />
+                      <DetailRow label="Current medications" value={joinOrFallback(patient.currentMedications)} />
+                      <DetailRow label="Allergies"           value={joinOrFallback(patient.allergies)} />
+
+                      {/* Status dropdown */}
+                      <div
+                        className="flex items-center gap-3 mt-3 pt-3 border-t border-gray-100"
+                        onClick={e => e.stopPropagation()}
+                      >
+                        <label className="text-sm font-semibold text-gray-900 whitespace-nowrap">
+                          Update status:
+                        </label>
+                        <select
+                          value={patient.status || 'pending'}
+                          onChange={e => {
+                            const newStatus = e.target.value;
+                            fetch(`http://localhost:5000/api/intake/${patient._id}/status`, {
+                              method: 'PATCH',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ status: newStatus }),
+                            })
+                              .then(res => res.json())
+                              .then(() => {
+                                setPatients(prev =>
+                                  prev.map(p => p._id === patient._id ? { ...p, status: newStatus } : p)
+                                );
+                              })
+                              .catch(err => console.error('Failed to update status:', err));
+                          }}
+                          className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="seen">Seen</option>
+                          <option value="needs-follow-up">Needs follow-up</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Click to expand hint */}
+                  {!isExpanded && (
+                    <div className="text-right mt-2">
+                      <span className="text-xs text-gray-300">Click to expand</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+
+          {patients.length === 0 && (
+            <p className="text-sm text-gray-500">No patients on record yet.</p>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -31,8 +31,16 @@ export default function App() {
     }
   }, []);
 
+  const storedUser = localStorage.getItem('user');
+  const savedUser  = storedUser ? JSON.parse(storedUser) : null;
+
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData]       = useState(initialForm);
+  const [formData, setFormData]       = useState({
+    ...initialForm,
+    firstName: savedUser?.firstName || '',
+    lastName:  savedUser?.lastName  || '',
+    email:     savedUser?.email     || '',
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError]             = useState(null);
   const [submitted, setSubmitted]     = useState(false);

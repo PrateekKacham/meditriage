@@ -36,7 +36,7 @@ export default function Portal() {
       .then(res => res.json())
       .then(result => {
         const mine = (result.data || []).filter(
-          s => s.email === user?.email
+          s => s.email?.toLowerCase() === user?.email?.toLowerCase()
         );
         setSubmissions(mine);
         setLoading(false);

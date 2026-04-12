@@ -317,20 +317,12 @@ export function Confirmation({ formData }) {
           View My Portal →
         </button>
       ) : (
-        <div className="flex justify-center gap-3 mt-6">
-          <button
-            onClick={() => navigate('/portal')}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg cursor-pointer"
-          >
-            View My Portal →
-          </button>
-          <button
-            onClick={() => window.location.reload()}
-            className="border border-gray-300 text-gray-600 hover:bg-gray-50 px-4 py-2 rounded-lg text-sm cursor-pointer"
-          >
-            Submit Another
-          </button>
-        </div>
+        <button
+          onClick={() => window.location.reload()}
+          className="border border-gray-300 text-gray-600 hover:bg-gray-50 px-4 py-2 rounded-lg text-sm mt-6 cursor-pointer"
+        >
+          Submit Another
+        </button>
       )}
     </div>
   );

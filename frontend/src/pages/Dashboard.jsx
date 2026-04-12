@@ -175,12 +175,13 @@ export default function Dashboard() {
                     </div>
                   )}
 
-                  {/* Click to expand hint */}
-                  {!isExpanded && (
-                    <div className="text-right mt-2">
-                      <span className="text-xs text-gray-300">Click to expand</span>
-                    </div>
-                  )}
+                  {/* Expand / collapse hint */}
+                  <div className="text-right mt-2">
+                    {isExpanded
+                      ? <span className="text-xs text-blue-500 font-medium">▼ Click to collapse</span>
+                      : <span className="text-xs text-gray-400">▶ Click to expand</span>
+                    }
+                  </div>
                 </div>
               </div>
             );

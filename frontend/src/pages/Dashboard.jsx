@@ -37,6 +37,7 @@ export default function Dashboard() {
   const [expandedId, setExpandedId]     = useState(null);
   const [searchQuery, setSearchQuery]   = useState('');
   const [urgencyFilter, setUrgencyFilter] = useState('All');
+  const [statusFilter, setStatusFilter]   = useState('All');
 
   useEffect(() => {
     fetch(`${API}/api/intake`)
@@ -73,7 +74,10 @@ export default function Dashboard() {
     const matchesUrgency = urgencyFilter === 'All' ||
       (urgencyFilter === 'Unknown' ? !p.urgency : p.urgency === urgencyFilter);
 
-    return matchesSearch && matchesUrgency;
+    const matchesStatus = statusFilter === 'All' ||
+      (p.status || 'pending') === statusFilter;
+
+    return matchesSearch && matchesUrgency && matchesStatus;
   });
 
   return (
@@ -116,8 +120,8 @@ export default function Dashboard() {
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
         />
 
-        {/* ── Urgency filter buttons ── */}
-        <div className="flex flex-wrap gap-2 mb-4">
+        {/* ── Urgency filter buttons + status dropdown ── */}
+        <div className="flex flex-wrap items-center gap-2 mb-4">
           {['All', 'Emergency', 'Urgent', 'Semi-Urgent', 'Non-Urgent', 'Unknown'].map(level => (
             <button
               key={level}
@@ -130,6 +134,17 @@ export default function Dashboard() {
               {level}
             </button>
           ))}
+
+          <select
+            value={statusFilter}
+            onChange={e => setStatusFilter(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer ml-auto"
+          >
+            <option value="All">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="seen">Seen</option>
+            <option value="needs-follow-up">Needs follow-up</option>
+          </select>
         </div>
 
         {/* ── Patient cards ── */}

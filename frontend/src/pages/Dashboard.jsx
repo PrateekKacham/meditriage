@@ -8,9 +8,24 @@ const URGENCY_BADGE = {
   'Non-Urgent':  { background: '#dcfce7', color: '#166534', border: '1px solid #86efac' },
 };
 
+// Helper: join an array to a string, or show a fallback if empty/missing
+function joinOrFallback(arr, fallback = 'None reported') {
+  return Array.isArray(arr) && arr.length > 0 ? arr.join(', ') : fallback;
+}
+
+// A single label + value row used in the expanded section
+function DetailRow({ label, value }) {
+  return (
+    <p style={{ margin: '0 0 8px', fontSize: 14, color: '#374151' }}>
+      <strong style={{ color: '#111827' }}>{label}:</strong> {value}
+    </p>
+  );
+}
+
 export default function Dashboard() {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [expandedId, setExpandedId] = useState(null);
 
   useEffect(() => {
     fetch('http://localhost:5000/api/intake')
@@ -50,6 +65,7 @@ export default function Dashboard() {
       {/* ── Patient cards ── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {patients.map(patient => {
+          const isExpanded = expandedId === patient._id;
           const badgeStyle = URGENCY_BADGE[patient.urgency] ?? {
             background: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db',
           };
@@ -62,15 +78,17 @@ export default function Dashboard() {
           return (
             <div
               key={patient._id}
+              onClick={() => setExpandedId(isExpanded ? null : patient._id)}
               style={{
                 border: '1px solid #e5e7eb',
                 borderRadius: 8,
                 padding: '16px 20px',
                 background: '#fff',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                cursor: 'pointer',
               }}
             >
-              {/* Name + urgency badge on one line */}
+              {/* Name + urgency badge */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                 <span style={{ fontWeight: 600, fontSize: 16, color: '#111827' }}>
                   {patient.firstName} {patient.lastName}
@@ -93,6 +111,27 @@ export default function Dashboard() {
               <p style={{ margin: 0, fontSize: 12, color: '#9ca3af' }}>
                 Submitted {submitted}
               </p>
+
+              {/* ── Expanded section ── */}
+              {isExpanded && (
+                <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #e5e7eb' }}>
+                  <DetailRow label="Urgency reason"       value={patient.urgencyReason        || 'Not available'} />
+                  <DetailRow label="Doctor summary"       value={patient.doctorSummary         || 'Not available'} />
+                  <DetailRow label="Symptoms"             value={joinOrFallback(patient.symptoms)} />
+                  <DetailRow label="Pain level"           value={patient.painLevel != null ? `${patient.painLevel} / 10` : 'Not provided'} />
+                  <DetailRow label="Symptom duration"     value={patient.symptomDuration       || 'Not provided'} />
+                  <DetailRow label="Existing conditions"  value={joinOrFallback(patient.existingConditions)} />
+                  <DetailRow label="Current medications"  value={joinOrFallback(patient.currentMedications)} />
+                  <DetailRow label="Allergies"            value={joinOrFallback(patient.allergies)} />
+                </div>
+              )}
+
+              {/* "Click to expand" hint — only shown when collapsed */}
+              {!isExpanded && (
+                <div style={{ textAlign: 'right', marginTop: 8 }}>
+                  <span style={{ fontSize: 11, color: '#d1d5db' }}>Click to expand</span>
+                </div>
+              )}
             </div>
           );
         })}

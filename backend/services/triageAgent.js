@@ -67,11 +67,24 @@ Urgency level definitions:
     ? intakeData.allergies.join(", ")
     : intakeData.allergies || "None reported";
 
+  // Calculate age from date of birth
+  let ageString = "Not provided";
+  if (intakeData.dateOfBirth) {
+    const dob = new Date(intakeData.dateOfBirth);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+    ageString = `${age} years old (DOB: ${intakeData.dateOfBirth})`;
+  }
+
   const userMessage = `
 Please triage the following patient:
 
 Name: ${intakeData.firstName} ${intakeData.lastName}
-Date of Birth: ${intakeData.dateOfBirth || "Not provided"}
+Patient Age: ${ageString}
 Chief Complaint: ${intakeData.chiefComplaint || "Not provided"}
 Symptoms: ${symptomList}
 Symptom Duration: ${intakeData.symptomDuration || "Not provided"}

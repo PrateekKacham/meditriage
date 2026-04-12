@@ -19,6 +19,20 @@ const URGENCY_BADGE = {
   'Non-Urgent':  'bg-green-100 text-green-800 border border-green-300',
 };
 
+function Toast({ message, onClose }) {
+  useEffect(() => {
+    const t = setTimeout(onClose, 3000);
+    return () => clearTimeout(t);
+  }, []);
+  if (!message) return null;
+  return (
+    <div className="fixed bottom-6 right-6 bg-gray-900 text-white text-sm px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 z-50 animate-fade-in">
+      <span>✓ {message}</span>
+      <button onClick={onClose} className="text-gray-400 hover:text-white cursor-pointer text-base leading-none">×</button>
+    </div>
+  );
+}
+
 function joinOrFallback(arr, fallback = 'None reported') {
   return Array.isArray(arr) && arr.length > 0 ? arr.join(', ') : fallback;
 }
@@ -44,6 +58,8 @@ export default function Dashboard() {
   const [patients, setPatients]   = useState([]);
   const [loading, setLoading]     = useState(true);
   const [expandedId, setExpandedId]     = useState(null);
+  const [toast, setToast]               = useState('');
+  const showToast = (msg) => setToast(msg);
   const [searchQuery, setSearchQuery]   = useState('');
   const [urgencyFilter, setUrgencyFilter] = useState('All');
   const [statusFilter, setStatusFilter]   = useState('All');
@@ -259,6 +275,7 @@ export default function Dashboard() {
                                 setPatients(prev =>
                                   prev.map(p => p._id === patient._id ? { ...p, status: newStatus } : p)
                                 );
+                                showToast(`Status updated to "${newStatus}"`);
                               })
                               .catch(err => console.error('Failed to update status:', err));
                           }}
@@ -291,6 +308,8 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      <Toast message={toast} onClose={() => setToast('')} />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { StepOne, StepTwo, StepThree, StepFour, Confirmation } from './component
 import { submitIntake } from './api/intake';
 import Dashboard from './pages/Dashboard';
 import Login     from './pages/Login';
+import Register  from './pages/Register';
 
 const initialForm = {
   firstName: '', lastName: '', dateOfBirth: '', email: '', phone: '',
@@ -123,6 +124,7 @@ export default function App() {
       <Route path="/"          element={intakeForm} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/login"     element={<Login />} />
+      <Route path="/register"  element={<Register />} />
     </Routes>
   );
 }

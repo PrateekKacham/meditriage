@@ -1,6 +1,6 @@
 // src/App.jsx
-import { useState, useEffect } from 'react';
-import { Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Routes, Route, Link } from 'react-router-dom';
 import { StepOne, StepTwo, StepThree, StepFour, Confirmation } from './components/Steps';
 import { submitIntake } from './api/intake';
 import Dashboard    from './pages/Dashboard';
@@ -103,25 +103,33 @@ function Navbar() {
   );
 }
 
+// ── ProtectedRoute — redirects logged-out users to patient login ──────────────
+function ProtectedRoute({ children }) {
+  if (!localStorage.getItem('token')) {
+    window.location.href = '/patient-login';
+    return null;
+  }
+  return children;
+}
+
+// ── DoctorRoute — redirects non-doctors to patient login ─────────────────────
+function DoctorRoute({ children }) {
+  const storedUser = localStorage.getItem('user');
+  const u = storedUser ? JSON.parse(storedUser) : null;
+  if (!localStorage.getItem('token') || u?.role !== 'doctor') {
+    window.location.href = '/patient-login';
+    return null;
+  }
+  return children;
+}
+
 // ── IntakeForm ────────────────────────────────────────────────────────────────
 function IntakeForm() {
-  const navigate = useNavigate();
-
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData]       = useState(getInitialForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError]   = useState(null);
   const [submitted, setSubmitted] = useState(false);
-
-  // Redirect logged-in patients to their portal
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    const u = storedUser ? JSON.parse(storedUser) : null;
-    if (token && u?.role === 'patient') {
-      navigate('/portal');
-    }
-  }, []);
 
   const updateForm = (fields) => setFormData(prev => ({ ...prev, ...fields }));
   const nextStep   = () => setCurrentStep(s => s + 1);
@@ -228,12 +236,12 @@ function IntakeForm() {
 export default function App() {
   return (
     <Routes>
-      <Route path="/"              element={<IntakeForm />} />
-      <Route path="/dashboard"     element={<Dashboard />} />
+      <Route path="/"              element={<ProtectedRoute><IntakeForm /></ProtectedRoute>} />
+      <Route path="/dashboard"     element={<DoctorRoute><Dashboard /></DoctorRoute>} />
       <Route path="/login"         element={<Login />} />
       <Route path="/register"      element={<Register />} />
       <Route path="/patient-login" element={<PatientLogin />} />
-      <Route path="/portal"        element={<Portal />} />
+      <Route path="/portal"        element={<ProtectedRoute><Portal /></ProtectedRoute>} />
     </Routes>
   );
 }

@@ -38,6 +38,7 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery]   = useState('');
   const [urgencyFilter, setUrgencyFilter] = useState('All');
   const [statusFilter, setStatusFilter]   = useState('All');
+  const [sortBy, setSortBy]               = useState('newest');
 
   useEffect(() => {
     fetch(`${API}/api/intake`)
@@ -78,6 +79,20 @@ export default function Dashboard() {
       (p.status || 'pending') === statusFilter;
 
     return matchesSearch && matchesUrgency && matchesStatus;
+  });
+
+  // Sort the filtered list
+  const URGENCY_RANK = { Emergency: 0, Urgent: 1, 'Semi-Urgent': 2, 'Non-Urgent': 3 };
+  const sorted = [...filteredPatients].sort((a, b) => {
+    if (sortBy === 'oldest') return new Date(a.createdAt) - new Date(b.createdAt);
+    if (sortBy === 'urgency') {
+      const ra = URGENCY_RANK[a.urgency] ?? 4;
+      const rb = URGENCY_RANK[b.urgency] ?? 4;
+      return ra - rb;
+    }
+    if (sortBy === 'name') return (a.firstName || '').localeCompare(b.firstName || '');
+    // default: newest
+    return new Date(b.createdAt) - new Date(a.createdAt);
   });
 
   return (
@@ -145,11 +160,22 @@ export default function Dashboard() {
             <option value="seen">Seen</option>
             <option value="needs-follow-up">Needs follow-up</option>
           </select>
+
+          <select
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer ml-2"
+          >
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="urgency">Urgency (High to Low)</option>
+            <option value="name">Name (A–Z)</option>
+          </select>
         </div>
 
         {/* ── Patient cards ── */}
         <div className="flex flex-col gap-3">
-          {filteredPatients.map(patient => {
+          {sorted.map(patient => {
             const isExpanded   = expandedId === patient._id;
             const borderCls    = URGENCY_LEFT_BORDER[patient.urgency] ?? 'border-l-4 border-gray-300';
             const badgeCls     = URGENCY_BADGE[patient.urgency]       ?? 'bg-gray-100 text-gray-700 border border-gray-300';
@@ -242,7 +268,7 @@ export default function Dashboard() {
             );
           })}
 
-          {filteredPatients.length === 0 && (
+          {sorted.length === 0 && (
             <p className="text-sm text-gray-500">
               {searchQuery ? 'No patients match your search.' : 'No patients on record yet.'}
             </p>

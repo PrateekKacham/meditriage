@@ -85,7 +85,7 @@ Allergies: ${allergiesList}
   // This is an async call — it sends our prompt to Llama 3 and waits for a reply.
   // "await" pauses execution here until Groq responds (usually < 2 seconds).
   const chatCompletion = await groq.chat.completions.create({
-    model: "llama3-70b-8192", // Llama 3 70B — best quality available on Groq
+    model: "meta-llama/llama-4-scout-17b-16e-instruct", // Llama 3 70B — best quality available on Groq
     temperature: 0.2,         // Low temperature = more consistent, clinical responses
                               // (0 = deterministic, 1 = creative — we want reliable)
     max_tokens: 1024,         // Plenty of room for our JSON response
@@ -105,7 +105,11 @@ Allergies: ${allergiesList}
   // If parsing fails, we throw a descriptive error so it's easy to debug.
   let parsed;
   try {
-    parsed = JSON.parse(rawText);
+    const cleanedText = rawText
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/```\s*$/i, '')
+      .trim();
+    parsed = JSON.parse(cleanedText);
   } catch (err) {
     // This can happen if the model adds unexpected text around the JSON.
     // The low temperature and strict prompt should prevent this, but just in case:

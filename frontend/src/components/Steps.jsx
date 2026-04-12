@@ -1,4 +1,5 @@
 // src/components/Steps.jsx
+import { useState, useEffect } from 'react';
 // Contains all 4 form steps + the Confirmation screen
 //
 // CONCEPT: Props
@@ -259,17 +260,24 @@ export function StepThree({ data, update, onNext, onBack }) {
 // Instead of repeating the same input 3 times, we define it once
 // and reuse it with different props — same idea as a function
 function TagInput({ label, value, onChange, placeholder }) {
+  // Store the raw string locally while the user is typing.
+  // Splitting on every keystroke caused the cursor to jump when typing spaces.
+  const [raw, setRaw] = useState(value.join(', '));
+
+  // Sync inward when the parent resets or pre-fills the value array.
+  useEffect(() => {
+    setRaw(value.join(', '));
+  }, [value]);
+
   return (
     <div style={styles.field}>
       <label style={styles.label}>{label}</label>
       <input
         style={styles.input}
-        // Display the array as a comma-separated string for the user to read/edit
-        value={value.join(', ')}
-        onChange={e =>
-          // Split on commas, trim whitespace from each item, remove empty strings
-          onChange(e.target.value.split(',').map(s => s.trim()).filter(Boolean))
-        }
+        value={raw}
+        onChange={e => setRaw(e.target.value)}
+        // Only convert to array and notify the parent when the user leaves the field.
+        onBlur={() => onChange(raw.split(',').map(s => s.trim()).filter(Boolean))}
         placeholder={placeholder}
       />
       <p style={{ fontSize: 12, color: '#9ca3af', margin: '4px 0 0' }}>

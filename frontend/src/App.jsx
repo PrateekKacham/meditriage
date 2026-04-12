@@ -42,7 +42,7 @@ export default function App() {
     <div className="bg-gray-50 min-h-screen">
       <div className="max-w-xl mx-auto py-10 px-4">
         <div className="text-center mb-8">
-          <span className="text-4xl">✚</span>
+          <span className="text-4xl text-blue-600">✚</span>
           <h1 className="text-2xl font-bold text-blue-600 mt-2">MediTriage</h1>
         </div>
         <div className="bg-white rounded-2xl shadow-md p-8">
@@ -56,7 +56,7 @@ export default function App() {
 
         {/* ── Branded header ── */}
         <div className="text-center mb-8">
-          <span className="text-4xl">✚</span>
+          <span className="text-4xl text-blue-600">✚</span>
           <h1 className="text-2xl font-bold text-blue-600 mt-2">MediTriage</h1>
           <p className="text-sm text-gray-500 mt-1">Patient Intake Form</p>
         </div>

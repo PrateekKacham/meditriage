@@ -1,5 +1,6 @@
 // src/pages/Dashboard.jsx
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 // Complete Tailwind class strings — must be full strings so Tailwind includes them
 const URGENCY_LEFT_BORDER = {
@@ -66,6 +67,7 @@ export default function Dashboard() {
         <div className="flex items-center gap-2">
           <span className="text-white text-xl">✚</span>
           <span className="text-white text-lg font-bold tracking-wide">MediTriage</span>
+          <Link to="/" className="text-blue-200 hover:text-white text-sm ml-6">← Intake Form</Link>
         </div>
         <span className="text-blue-200 text-sm font-medium">Doctor Dashboard</span>
       </nav>

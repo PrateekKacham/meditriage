@@ -1,5 +1,6 @@
 // src/components/Steps.jsx
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const COMMON_SYMPTOMS = [
   'Headache', 'Fever', 'Cough', 'Shortness of breath',
@@ -285,6 +286,7 @@ export function StepFour({ data, update, onBack, onSubmit, isSubmitting }) {
 // CONFIRMATION — shown after successful submission
 // ─────────────────────────────────────────────────────────
 export function Confirmation({ formData }) {
+  const navigate = useNavigate();
   return (
     <div className="text-center py-6">
 
@@ -306,6 +308,13 @@ export function Confirmation({ formData }) {
         <p><strong className="text-gray-900">Pain level:</strong> {formData.painLevel} / 10</p>
         <p><strong className="text-gray-900">Duration:</strong> {formData.symptomDuration || 'Not specified'}</p>
       </div>
+
+      <button
+        onClick={() => navigate('/dashboard')}
+        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg mt-6 cursor-pointer"
+      >
+        View Dashboard →
+      </button>
     </div>
   );
 }

@@ -109,7 +109,18 @@ export function StepOne({ data, update, onNext }) {
         <input
           style={styles.input}
           value={data.phone}
-          onChange={e => update({ phone: e.target.value })}
+          onChange={e => {
+            const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+            let formatted = digits;
+            if (digits.length > 6) {
+              formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+            } else if (digits.length > 3) {
+              formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+            } else if (digits.length > 0) {
+              formatted = `(${digits}`;
+            }
+            update({ phone: formatted });
+          }}
           placeholder="(617) 555-0100"
         />
       </div>

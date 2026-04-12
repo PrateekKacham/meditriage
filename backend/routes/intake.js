@@ -7,7 +7,8 @@
 
 import express from "express";
 import Intake from "../models/Intake.js";
-import { runTriageAgent } from "../services/triageAgent.js"; // ← NEW
+import { runTriageAgent } from "../services/triageAgent.js";
+import { sendTriageConfirmation } from "../services/emailService.js";
 
 const router = express.Router();
 
@@ -57,7 +58,20 @@ router.post("/", async (req, res) => {
       { new: true }
     );
 
-    // STEP 4 — Send the fully triaged record back to the frontend.
+    // STEP 4 — Send confirmation email — fire and forget (don't await).
+    // We don't await so a slow email send never delays the API response.
+    sendTriageConfirmation({
+      to:            updated.email,
+      firstName:     updated.firstName,
+      urgency:       updated.urgency,
+      urgencyReason: updated.urgencyReason,
+      doctorSummary: updated.doctorSummary,
+      submittedDate: new Date(updated.createdAt).toLocaleDateString('en-US', {
+        year: 'numeric', month: 'long', day: 'numeric',
+      }),
+    }).catch(err => console.error('Email send failed:', err.message));
+
+    // STEP 5 — Send the fully triaged record back to the frontend.
     // HTTP 201 = "Created" — the standard status code for a successful POST
     // that resulted in a new resource being created.
     return res.status(201).json({

@@ -1,12 +1,9 @@
 // src/pages/Login.jsx
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export default function Login() {
-  const navigate = useNavigate();
-
   const [email, setEmail]             = useState('');
   const [password, setPassword]       = useState('');
   const [error, setError]             = useState('');
@@ -14,7 +11,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    if (localStorage.getItem('token')) navigate('/dashboard');
+    if (localStorage.getItem('token')) window.location.href = '/dashboard';
   }, []);
 
   const handleSubmit = async (e) => {
@@ -30,7 +27,8 @@ export default function Login() {
       const data = await res.json();
       if (!res.ok) { setError(data.message || 'Login failed'); return; }
       localStorage.setItem('token', data.token);
-      navigate('/dashboard');
+      localStorage.setItem('user', JSON.stringify(data.user));
+      window.location.href = '/dashboard';
     } catch {
       setError('Could not connect to server. Please try again.');
     } finally {

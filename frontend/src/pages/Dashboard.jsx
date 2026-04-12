@@ -35,10 +35,11 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   // Guard: redirect to login if no token
-  if (!localStorage.getItem('token')) {
-    navigate('/login');
-    return null;
-  }
+  useEffect(() => {
+    if (!localStorage.getItem('token')) {
+      navigate('/login');
+    }
+  }, []);
 
   const [patients, setPatients]   = useState([]);
   const [loading, setLoading]     = useState(true);

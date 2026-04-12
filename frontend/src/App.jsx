@@ -1,6 +1,6 @@
 // src/App.jsx
 import { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { StepOne, StepTwo, StepThree, StepFour, Confirmation } from './components/Steps';
 import { submitIntake } from './api/intake';
 import Dashboard   from './pages/Dashboard';
@@ -74,15 +74,73 @@ function IntakeForm() {
     window.location.reload();
   };
 
+  // ── Navbar — shared by both the form and confirmation screens ───────────────
+  const token = localStorage.getItem('token');
+  const role  = savedUser?.role;
+
+  const navbar = (
+    <nav className="bg-blue-900 px-6 py-4 flex items-center justify-between shadow-md">
+      <div className="flex items-center gap-2">
+        <span className="text-white text-xl">✚</span>
+        <span className="text-white text-lg font-bold tracking-wide">MediTriage</span>
+      </div>
+      <div className="flex items-center gap-3">
+        {!token ? (
+          <>
+            <Link
+              to="/patient-login"
+              className="text-blue-200 hover:text-white text-sm border border-blue-700 hover:border-blue-400 px-3 py-1 rounded-lg transition-colors"
+            >
+              Patient Login
+            </Link>
+            <Link
+              to="/register"
+              className="bg-blue-600 hover:bg-blue-500 text-white text-sm px-3 py-1 rounded-lg transition-colors"
+            >
+              Register
+            </Link>
+          </>
+        ) : role === 'patient' ? (
+          <>
+            <Link
+              to="/portal"
+              className="text-blue-200 hover:text-white text-sm border border-blue-700 hover:border-blue-400 px-3 py-1 rounded-lg transition-colors"
+            >
+              My Portal
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="text-blue-200 hover:text-white text-sm border border-blue-700 hover:border-blue-400 px-3 py-1 rounded-lg transition-colors cursor-pointer"
+            >
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <Link
+              to="/dashboard"
+              className="text-blue-200 hover:text-white text-sm border border-blue-700 hover:border-blue-400 px-3 py-1 rounded-lg transition-colors"
+            >
+              Dashboard
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="text-blue-200 hover:text-white text-sm border border-blue-700 hover:border-blue-400 px-3 py-1 rounded-lg transition-colors cursor-pointer"
+            >
+              Logout
+            </button>
+          </>
+        )}
+      </div>
+    </nav>
+  );
+
   // ── Confirmation screen ───────────────────────────────────────────────────
   if (submitted) {
     return (
       <div className="bg-gray-50 min-h-screen">
+        {navbar}
         <div className="max-w-xl mx-auto py-10 px-4">
-          <div className="text-center mb-8">
-            <span className="text-4xl text-blue-600">✚</span>
-            <h1 className="text-2xl font-bold text-blue-600 mt-2">MediTriage</h1>
-          </div>
           <div className="bg-white rounded-2xl shadow-md p-8">
             <Confirmation formData={formData} />
           </div>
@@ -94,6 +152,7 @@ function IntakeForm() {
   // ── Intake form ───────────────────────────────────────────────────────────
   return (
     <div className="bg-gray-50 min-h-screen">
+      {navbar}
       <div className="max-w-xl mx-auto py-10 px-4">
 
         {/* ── Branded header ── */}

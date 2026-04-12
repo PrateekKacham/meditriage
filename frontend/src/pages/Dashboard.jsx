@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 // Complete Tailwind class strings — must be full strings so Tailwind includes them
 const URGENCY_LEFT_BORDER = {
   'Emergency':   'border-l-4 border-red-500',
@@ -35,7 +37,7 @@ export default function Dashboard() {
   const [expandedId, setExpandedId] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/intake')
+    fetch(`${API}/api/intake`)
       .then(res => res.json())
       .then(result => {
         setPatients(result.data);
@@ -150,7 +152,7 @@ export default function Dashboard() {
                           value={patient.status || 'pending'}
                           onChange={e => {
                             const newStatus = e.target.value;
-                            fetch(`http://localhost:5000/api/intake/${patient._id}/status`, {
+                            fetch(`${API}/api/intake/${patient._id}/status`, {
                               method: 'PATCH',
                               headers: { 'Content-Type': 'application/json' },
                               body: JSON.stringify({ status: newStatus }),

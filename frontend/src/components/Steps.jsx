@@ -1,6 +1,5 @@
 // src/components/Steps.jsx
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 // ── Shared class strings ──────────────────────────────────────────────────────
 const inputCls  = 'border border-gray-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm';
@@ -37,7 +36,7 @@ export function StepOne({ data, update, onNext }) {
       {/* First + last name side by side */}
       <div className="flex gap-3 mb-4">
         <div className="flex-1">
-          <label className={`${labelCls} mb-1`}>First name *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">First name *</label>
           <input
             className={inputCls}
             value={data.firstName}
@@ -46,7 +45,7 @@ export function StepOne({ data, update, onNext }) {
           />
         </div>
         <div className="flex-1">
-          <label className={`${labelCls} mb-1`}>Last name *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Last name *</label>
           <input
             className={inputCls}
             value={data.lastName}
@@ -57,7 +56,7 @@ export function StepOne({ data, update, onNext }) {
       </div>
 
       <div className={fieldCls}>
-        <label className={`${labelCls} mb-1`}>Date of birth *</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Date of birth *</label>
         <input
           type="date"
           className={inputCls}
@@ -90,7 +89,7 @@ export function StepOne({ data, update, onNext }) {
       </div>
 
       <div className={fieldCls}>
-        <label className={`${labelCls} mb-1`}>Phone</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
         <input
           className={inputCls}
           value={data.phone}
@@ -136,7 +135,7 @@ export function StepTwo({ data, update, onNext, onBack }) {
       <h2 className="text-lg font-semibold text-gray-900 mb-5">What brings you in today?</h2>
 
       <div className={fieldCls}>
-        <label className={`${labelCls} mb-1`}>Main concern *</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Main concern *</label>
         <textarea
           className={`${inputCls} h-28 resize-y`}
           value={data.chiefComplaint}
@@ -173,7 +172,7 @@ export function StepThree({ data, update, onNext, onBack }) {
       <h2 className="text-lg font-semibold text-gray-900 mb-5">Symptoms</h2>
 
       <div className={fieldCls}>
-        <label className={`${labelCls} mb-2`}>Select all that apply</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Select all that apply</label>
         <div className="flex flex-wrap gap-2">
           {COMMON_SYMPTOMS.map(sym => {
             const selected = data.symptoms.includes(sym);
@@ -195,7 +194,7 @@ export function StepThree({ data, update, onNext, onBack }) {
       </div>
 
       <div className={fieldCls}>
-        <label className={`${labelCls} mb-1`}>How long have you had these symptoms?</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">How long have you had these symptoms?</label>
         <input
           className={inputCls}
           value={data.symptomDuration}
@@ -241,11 +240,11 @@ function TagInput({ label, value, onChange, placeholder }) {
 
   useEffect(() => {
     setRaw(value.join(', '));
-  }, [value]);
+  }, [value.join(',')]);
 
   return (
     <div className={fieldCls}>
-      <label className={`${labelCls} mb-1`}>{label}</label>
+      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
       <input
         className={inputCls}
         value={raw}
@@ -301,8 +300,6 @@ export function StepFour({ data, update, onBack, onSubmit, isSubmitting }) {
 // CONFIRMATION — shown after successful submission
 // ─────────────────────────────────────────────────────────
 export function Confirmation({ formData }) {
-  const navigate = useNavigate();
-
   return (
     <div className="text-center py-6">
 
@@ -325,21 +322,22 @@ export function Confirmation({ formData }) {
         <p><strong className="text-gray-900">Duration:</strong> {formData.symptomDuration || 'Not specified'}</p>
       </div>
 
-      {localStorage.getItem('token') ? (
+      <div className="flex flex-col items-center gap-3 mt-6">
+        {localStorage.getItem('token') && (
+          <button
+            onClick={() => { window.location.href = '/portal'; }}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg cursor-pointer transition-colors"
+          >
+            View My Portal →
+          </button>
+        )}
         <button
-          onClick={() => navigate('/portal')}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg mt-6 cursor-pointer"
+          onClick={() => { window.location.href = '/'; }}
+          className="border border-gray-300 text-gray-600 hover:bg-gray-50 px-4 py-2 rounded-lg text-sm cursor-pointer transition-colors"
         >
-          View My Portal →
+          Submit another intake
         </button>
-      ) : (
-        <button
-          onClick={() => window.location.reload()}
-          className="border border-gray-300 text-gray-600 hover:bg-gray-50 px-4 py-2 rounded-lg text-sm mt-6 cursor-pointer"
-        >
-          Submit Another
-        </button>
-      )}
+      </div>
     </div>
   );
 }

@@ -14,15 +14,23 @@ function calcStrength(pw) {
   return score;
 }
 
-const STRENGTH_META = {
-  0: { label: 'Weak',   color: 'bg-red-500',    text: 'text-red-500'    },
-  1: { label: 'Weak',   color: 'bg-red-500',    text: 'text-red-500'    },
-  2: { label: 'Fair',   color: 'bg-orange-400', text: 'text-orange-400' },
-  3: { label: 'Good',   color: 'bg-yellow-400', text: 'text-yellow-500' },
-  4: { label: 'Strong', color: 'bg-green-500',  text: 'text-green-600'  },
-};
+// Colors for each of the 4 segments at each strength level
+// segment index 0–3, strength 0–4
+const SEGMENT_COLORS = [
+  // strength 0 — no segments filled
+  ['bg-gray-200', 'bg-gray-200', 'bg-gray-200', 'bg-gray-200'],
+  // strength 1 — Weak
+  ['bg-red-500',  'bg-gray-200', 'bg-gray-200', 'bg-gray-200'],
+  // strength 2 — Fair
+  ['bg-orange-400', 'bg-orange-400', 'bg-gray-200', 'bg-gray-200'],
+  // strength 3 — Good
+  ['bg-yellow-400', 'bg-yellow-400', 'bg-yellow-400', 'bg-gray-200'],
+  // strength 4 — Strong
+  ['bg-green-500', 'bg-green-500', 'bg-green-500', 'bg-green-500'],
+];
 
-const WIDTH_CLS = ['w-0', 'w-1/4', 'w-2/4', 'w-3/4', 'w-full'];
+const STRENGTH_LABEL = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+const STRENGTH_TEXT  = ['', 'text-red-500', 'text-orange-400', 'text-yellow-500', 'text-green-600'];
 
 // ── Validation ────────────────────────────────────────────────────────────────
 function validate(email, password, confirmPassword) {
@@ -39,28 +47,28 @@ function validate(email, password, confirmPassword) {
   return null;
 }
 
-// ── Shared input class ────────────────────────────────────────────────────────
 const inputCls = 'border border-gray-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm pr-10';
 
 export default function Register() {
   const navigate = useNavigate();
 
-  const [firstName, setFirstName]               = useState('');
-  const [lastName, setLastName]                 = useState('');
-  const [email, setEmail]                       = useState('');
-  const [password, setPassword]                 = useState('');
-  const [confirmPassword, setConfirmPassword]   = useState('');
-  const [error, setError]                       = useState('');
-  const [isLoading, setIsLoading]               = useState(false);
-  const [showPassword, setShowPassword]         = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [firstName, setFirstName]         = useState('');
+  const [lastName, setLastName]           = useState('');
+  const [email, setEmail]                 = useState('');
+  const [password, setPassword]           = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError]                 = useState('');
+  const [isLoading, setIsLoading]         = useState(false);
+  const [showPassword, setShowPassword]   = useState(false);
+  const [showConfirm, setShowConfirm]     = useState(false);
 
   useEffect(() => {
     if (localStorage.getItem('token')) navigate('/portal');
   }, []);
 
-  const strength     = calcStrength(password);
-  const strengthMeta = STRENGTH_META[strength];
+  const strength    = calcStrength(password);
+  const segColors   = SEGMENT_COLORS[strength];
+  const mismatch    = confirmPassword.length > 0 && confirmPassword !== password;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -136,7 +144,7 @@ export default function Register() {
             />
           </div>
 
-          {/* Password + strength */}
+          {/* Password + strength bar */}
           <div className="mb-3">
             <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
             <div className="relative">
@@ -152,20 +160,20 @@ export default function Register() {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                 tabIndex={-1}
               >
-                {showPassword ? '👁‍🗨' : '👁'}
+                {showPassword ? '🙈' : '👁'}
               </button>
             </div>
 
-            {/* Strength bar — only shown once user starts typing */}
+            {/* 4-segment strength bar */}
             {password.length > 0 && (
               <div className="mt-2">
-                <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
-                  <div
-                    className={`h-1.5 rounded-full transition-all duration-300 ${strengthMeta.color} ${WIDTH_CLS[strength]}`}
-                  />
+                <div className="flex gap-1">
+                  {segColors.map((cls, i) => (
+                    <div key={i} className={`flex-1 h-1.5 rounded-full transition-colors duration-300 ${cls}`} />
+                  ))}
                 </div>
-                <p className={`text-xs mt-1 font-medium ${strengthMeta.text}`}>
-                  {strengthMeta.label}
+                <p className={`text-xs mt-1 font-medium ${STRENGTH_TEXT[strength]}`}>
+                  {STRENGTH_LABEL[strength]}
                 </p>
               </div>
             )}
@@ -176,20 +184,26 @@ export default function Register() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Confirm password</label>
             <div className="relative">
               <input
-                type={showConfirmPassword ? 'text' : 'password'} required
+                type={showConfirm ? 'text' : 'password'} required
                 value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
-                className={inputCls}
+                className={`${mismatch
+                  ? 'border border-red-400 focus:ring-red-400'
+                  : 'border border-gray-300 focus:ring-blue-500'
+                } rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 text-sm pr-10`}
               />
               <button
                 type="button"
-                onClick={() => setShowConfirmPassword(v => !v)}
+                onClick={() => setShowConfirm(v => !v)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                 tabIndex={-1}
               >
-                {showConfirmPassword ? '👁‍🗨' : '👁'}
+                {showConfirm ? '🙈' : '👁'}
               </button>
             </div>
+            {mismatch && (
+              <p className="text-xs text-red-500 mt-1">Passwords don't match</p>
+            )}
           </div>
 
           {error && (

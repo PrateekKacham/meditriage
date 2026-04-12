@@ -3,13 +3,13 @@ import { useState, useEffect } from 'react';
 import { Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { StepOne, StepTwo, StepThree, StepFour, Confirmation } from './components/Steps';
 import { submitIntake } from './api/intake';
-import Dashboard   from './pages/Dashboard';
-import Login       from './pages/Login';
-import Register    from './pages/Register';
+import Dashboard    from './pages/Dashboard';
+import Login        from './pages/Login';
+import Register     from './pages/Register';
 import PatientLogin from './pages/PatientLogin';
-import Portal      from './pages/Portal';
+import Portal       from './pages/Portal';
 
-// ── Shared constants ─────────────────────────────────────────────────────────
+// ── Shared constants ──────────────────────────────────────────────────────────
 
 const STEP_LABELS = ['Personal', 'Complaint', 'Symptoms', 'History'];
 
@@ -20,70 +20,36 @@ const blankForm = {
   existingConditions: [], allergies: [], currentMedications: [],
 };
 
-// ── IntakeForm ────────────────────────────────────────────────────────────────
-// Owns all intake form state. Lives at route "/".
-// ─────────────────────────────────────────────────────────────────────────────
-function IntakeForm() {
-  const navigate = useNavigate();
-
-  // Read stored patient to pre-fill personal fields
+function getInitialForm() {
   const storedUser = localStorage.getItem('user');
-  const savedUser  = storedUser ? JSON.parse(storedUser) : null;
-
-  const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState({
+  const u = storedUser ? JSON.parse(storedUser) : null;
+  return {
     ...blankForm,
-    firstName: savedUser?.firstName || '',
-    lastName:  savedUser?.lastName  || '',
-    email:     savedUser?.email     || '',
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError]   = useState(null);
-  const [submitted, setSubmitted] = useState(false);
-
-  // Redirect logged-in patients to their portal
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const su    = localStorage.getItem('user');
-    const u     = su ? JSON.parse(su) : null;
-    if (token && u?.role === 'patient') {
-      navigate('/portal');
-    }
-  }, []);
-
-  const updateForm = (fields) => setFormData(prev => ({ ...prev, ...fields }));
-  const nextStep   = () => setCurrentStep(s => s + 1);
-  const prevStep   = () => setCurrentStep(s => s - 1);
-
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
-    setError(null);
-    try {
-      await submitIntake(formData);
-      setSubmitted(true);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsSubmitting(false);
-    }
+    firstName: u?.firstName || '',
+    lastName:  u?.lastName  || '',
+    email:     u?.email     || '',
   };
+}
+
+// ── Navbar ────────────────────────────────────────────────────────────────────
+function Navbar() {
+  const storedUser = localStorage.getItem('user');
+  const user = storedUser ? JSON.parse(storedUser) : null;
+  const token = localStorage.getItem('token');
+  const role  = user?.role;
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.reload();
+    window.location.href = '/';
   };
 
-  // ── Navbar — shared by both the form and confirmation screens ───────────────
-  const token = localStorage.getItem('token');
-  const role  = savedUser?.role;
-
-  const navbar = (
+  return (
     <nav className="bg-blue-900 px-6 py-4 flex items-center justify-between shadow-md">
-      <div className="flex items-center gap-2">
+      <a href="/" className="flex items-center gap-2 no-underline">
         <span className="text-white text-xl">✚</span>
         <span className="text-white text-lg font-bold tracking-wide">MediTriage</span>
-      </div>
+      </a>
       <div className="flex items-center gap-3">
         {!token ? (
           <>
@@ -102,6 +68,7 @@ function IntakeForm() {
           </>
         ) : role === 'patient' ? (
           <>
+            <span className="text-blue-200 text-sm">Hi, {user.firstName}</span>
             <Link
               to="/portal"
               className="text-blue-200 hover:text-white text-sm border border-blue-700 hover:border-blue-400 px-3 py-1 rounded-lg transition-colors"
@@ -134,12 +101,50 @@ function IntakeForm() {
       </div>
     </nav>
   );
+}
 
-  // ── Confirmation screen ───────────────────────────────────────────────────
+// ── IntakeForm ────────────────────────────────────────────────────────────────
+function IntakeForm() {
+  const navigate = useNavigate();
+
+  const [currentStep, setCurrentStep] = useState(1);
+  const [formData, setFormData]       = useState(getInitialForm);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError]   = useState(null);
+  const [submitted, setSubmitted] = useState(false);
+
+  // Redirect logged-in patients to their portal
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    const u = storedUser ? JSON.parse(storedUser) : null;
+    if (token && u?.role === 'patient') {
+      navigate('/portal');
+    }
+  }, []);
+
+  const updateForm = (fields) => setFormData(prev => ({ ...prev, ...fields }));
+  const nextStep   = () => setCurrentStep(s => s + 1);
+  const prevStep   = () => setCurrentStep(s => s - 1);
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      await submitIntake(formData);
+      setSubmitted(true);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // ── Confirmation screen ─────────────────────────────────────────────────────
   if (submitted) {
     return (
       <div className="bg-gray-50 min-h-screen">
-        {navbar}
+        <Navbar />
         <div className="max-w-xl mx-auto py-10 px-4">
           <div className="bg-white rounded-2xl shadow-md p-8">
             <Confirmation formData={formData} />
@@ -149,10 +154,10 @@ function IntakeForm() {
     );
   }
 
-  // ── Intake form ───────────────────────────────────────────────────────────
+  // ── Intake form ─────────────────────────────────────────────────────────────
   return (
     <div className="bg-gray-50 min-h-screen">
-      {navbar}
+      <Navbar />
       <div className="max-w-xl mx-auto py-10 px-4">
 
         {/* ── Branded header ── */}
@@ -214,36 +219,21 @@ function IntakeForm() {
             </div>
           )}
         </div>
-
-        {/* ── Signed-in note ── */}
-        {savedUser && (
-          <p className="text-center text-xs text-gray-400 mt-4">
-            Signed in as {savedUser.email} ·{' '}
-            <button
-              onClick={handleLogout}
-              className="hover:text-gray-600 underline cursor-pointer"
-            >
-              Not you? Log out
-            </button>
-          </p>
-        )}
       </div>
     </div>
   );
 }
 
 // ── App ───────────────────────────────────────────────────────────────────────
-// Root component — just owns the route table.
-// ─────────────────────────────────────────────────────────────────────────────
 export default function App() {
   return (
     <Routes>
-      <Route path="/"           element={<IntakeForm />} />
-      <Route path="/dashboard"  element={<Dashboard />} />
-      <Route path="/login"      element={<Login />} />
-      <Route path="/register"   element={<Register />} />
+      <Route path="/"              element={<IntakeForm />} />
+      <Route path="/dashboard"     element={<Dashboard />} />
+      <Route path="/login"         element={<Login />} />
+      <Route path="/register"      element={<Register />} />
       <Route path="/patient-login" element={<PatientLogin />} />
-      <Route path="/portal"     element={<Portal />} />
+      <Route path="/portal"        element={<Portal />} />
     </Routes>
   );
 }

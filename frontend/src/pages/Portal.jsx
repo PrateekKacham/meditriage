@@ -1,6 +1,6 @@
 // src/pages/Portal.jsx
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -71,11 +71,16 @@ export default function Portal() {
       {/* ── Navbar ── */}
       <nav className="bg-blue-900 px-6 py-4 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-2">
-          <span className="text-white text-xl">✚</span>
-          <span className="text-white text-lg font-bold tracking-wide">MediTriage</span>
-          <Link to="/" className="text-blue-200 hover:text-white text-sm ml-6">
+          <a href="/" className="flex items-center gap-2 no-underline">
+            <span className="text-white text-xl">✚</span>
+            <span className="text-white text-lg font-bold tracking-wide">MediTriage</span>
+          </a>
+          <a
+            href="/"
+            className="text-blue-200 hover:text-white text-sm ml-6"
+          >
             ← New Intake
-          </Link>
+          </a>
         </div>
         <div className="flex items-center gap-4">
           <span className="text-blue-200 text-sm font-medium">Patient Portal</span>
@@ -104,21 +109,21 @@ export default function Portal() {
         ) : submissions.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500 mb-4">No submissions yet. Submit your first intake form.</p>
-            <Link
-              to="/"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg transition-colors"
+            <button
+              onClick={() => { window.location.href = '/'; }}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg transition-colors cursor-pointer"
             >
               Start Intake Form
-            </Link>
+            </button>
           </div>
         ) : (
           <div className="flex flex-col gap-4">
             {submissions.map(s => {
-              const borderCls    = URGENCY_LEFT_BORDER[s.urgency]             ?? 'border-l-4 border-gray-300';
-              const badgeCls     = URGENCY_BADGE[s.urgency]                   ?? 'bg-gray-100 text-gray-700 border border-gray-300';
-              const statusKey    = s.status || 'pending';
-              const statusCls    = STATUS_BADGE[statusKey]                    ?? STATUS_BADGE['pending'];
-              const statusLabel  = STATUS_LABEL[statusKey]                    ?? 'Pending';
+              const borderCls   = URGENCY_LEFT_BORDER[s.urgency]  ?? 'border-l-4 border-gray-300';
+              const badgeCls    = URGENCY_BADGE[s.urgency]        ?? 'bg-gray-100 text-gray-700 border border-gray-300';
+              const statusKey   = s.status || 'pending';
+              const statusCls   = STATUS_BADGE[statusKey]         ?? STATUS_BADGE['pending'];
+              const statusLabel = STATUS_LABEL[statusKey]         ?? 'Pending';
               const submitted = s.createdAt
                 ? new Date(s.createdAt).toLocaleDateString('en-US', {
                     year: 'numeric', month: 'short', day: 'numeric',
@@ -164,6 +169,16 @@ export default function Portal() {
                 </div>
               );
             })}
+
+            {/* ── Submit another intake ── */}
+            <div className="pt-2 text-center">
+              <button
+                onClick={() => { window.location.href = '/'; }}
+                className="text-blue-600 hover:text-blue-800 text-sm font-medium hover:underline cursor-pointer"
+              >
+                + Submit a new intake form
+              </button>
+            </div>
           </div>
         )}
       </div>

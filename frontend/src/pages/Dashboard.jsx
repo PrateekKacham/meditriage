@@ -34,8 +34,9 @@ function DetailRow({ label, value }) {
 export default function Dashboard() {
   const [patients, setPatients]   = useState([]);
   const [loading, setLoading]     = useState(true);
-  const [expandedId, setExpandedId]   = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [expandedId, setExpandedId]     = useState(null);
+  const [searchQuery, setSearchQuery]   = useState('');
+  const [urgencyFilter, setUrgencyFilter] = useState('All');
 
   useEffect(() => {
     fetch(`${API}/api/intake`)
@@ -62,14 +63,18 @@ export default function Dashboard() {
   const urgentCount  = patients.filter(p => p.urgency === 'Emergency' || p.urgency === 'Urgent').length;
   const pendingCount = patients.filter(p => !p.status || p.status === 'pending').length;
 
-  // Filtered list — matches on full name or chief complaint (case-insensitive)
+  // Filtered list — applies search query and urgency filter together
   const q = searchQuery.toLowerCase();
-  const filteredPatients = q
-    ? patients.filter(p =>
-        `${p.firstName} ${p.lastName}`.toLowerCase().includes(q) ||
-        (p.chiefComplaint || '').toLowerCase().includes(q)
-      )
-    : patients;
+  const filteredPatients = patients.filter(p => {
+    const matchesSearch = !q ||
+      `${p.firstName} ${p.lastName}`.toLowerCase().includes(q) ||
+      (p.chiefComplaint || '').toLowerCase().includes(q);
+
+    const matchesUrgency = urgencyFilter === 'All' ||
+      (urgencyFilter === 'Unknown' ? !p.urgency : p.urgency === urgencyFilter);
+
+    return matchesSearch && matchesUrgency;
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -110,6 +115,22 @@ export default function Dashboard() {
           placeholder="Search by name or chief complaint..."
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
         />
+
+        {/* ── Urgency filter buttons ── */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {['All', 'Emergency', 'Urgent', 'Semi-Urgent', 'Non-Urgent', 'Unknown'].map(level => (
+            <button
+              key={level}
+              onClick={() => setUrgencyFilter(level)}
+              className={urgencyFilter === level
+                ? 'bg-blue-600 text-white px-4 py-1.5 rounded-full text-sm font-medium cursor-pointer'
+                : 'bg-white border border-gray-300 text-gray-600 px-4 py-1.5 rounded-full text-sm hover:bg-gray-50 cursor-pointer'
+              }
+            >
+              {level}
+            </button>
+          ))}
+        </div>
 
         {/* ── Patient cards ── */}
         <div className="flex flex-col gap-3">

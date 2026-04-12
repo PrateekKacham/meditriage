@@ -123,6 +123,43 @@ export default function Dashboard() {
                   <DetailRow label="Existing conditions"  value={joinOrFallback(patient.existingConditions)} />
                   <DetailRow label="Current medications"  value={joinOrFallback(patient.currentMedications)} />
                   <DetailRow label="Allergies"            value={joinOrFallback(patient.allergies)} />
+
+                  {/* ── Status dropdown ── */}
+                  <div
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12, paddingTop: 12, borderTop: '1px solid #f3f4f6' }}
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <label style={{ fontSize: 14, fontWeight: 600, color: '#111827', whiteSpace: 'nowrap' }}>
+                      Update status:
+                    </label>
+                    <select
+                      value={patient.status || 'pending'}
+                      onChange={e => {
+                        const newStatus = e.target.value;
+                        fetch(`http://localhost:5000/api/intake/${patient._id}/status`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ status: newStatus }),
+                        })
+                          .then(res => res.json())
+                          .then(() => {
+                            setPatients(prev =>
+                              prev.map(p => p._id === patient._id ? { ...p, status: newStatus } : p)
+                            );
+                          })
+                          .catch(err => console.error('Failed to update status:', err));
+                      }}
+                      style={{
+                        padding: '5px 10px', borderRadius: 6, fontSize: 14,
+                        border: '1px solid #d1d5db', background: '#fff',
+                        cursor: 'pointer', outline: 'none',
+                      }}
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="seen">Seen</option>
+                      <option value="needs-follow-up">Needs follow-up</option>
+                    </select>
+                  </div>
                 </div>
               )}
 

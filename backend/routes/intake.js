@@ -90,4 +90,26 @@ router.get("/", async (req, res) => {
   }
 });
 
+// ── PATCH /api/intake/:id/status ─────────────────────────────────────────────
+// Updates only the status field of an existing intake record.
+// Called from the doctor dashboard when staff changes a patient's status.
+// ─────────────────────────────────────────────────────────────────────────────
+router.patch("/:id/status", async (req, res) => {
+  try {
+    const { status } = req.body;
+    const updated = await Intake.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    );
+    if (!updated) {
+      return res.status(404).json({ message: "Intake not found." });
+    }
+    return res.status(200).json({ data: updated });
+  } catch (err) {
+    console.error("PATCH /api/intake/:id/status error:", err.message);
+    return res.status(500).json({ message: "Could not update status.", error: err.message });
+  }
+});
+
 export default router;

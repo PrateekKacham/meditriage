@@ -96,4 +96,45 @@ router.post('/patient-login', async (req, res) => {
   }
 });
 
+// ── PATCH /api/auth/profile ───────────────────────────────────────────────────
+// Lets a logged-in patient update their profile details.
+// ─────────────────────────────────────────────────────────────────────────────
+router.patch('/profile', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'No token provided' });
+    }
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const { firstName, lastName, phone, dateOfBirth } = req.body;
+
+    const updated = await User.findByIdAndUpdate(
+      decoded.userId,
+      { firstName, lastName, phone, dateOfBirth },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    return res.status(200).json({
+      message: 'Profile updated',
+      user: {
+        firstName:   updated.firstName,
+        lastName:    updated.lastName,
+        email:       updated.email,
+        phone:       updated.phone,
+        dateOfBirth: updated.dateOfBirth,
+        role:        updated.role,
+      },
+    });
+  } catch (err) {
+    console.error('PATCH /api/auth/profile error:', err.message);
+    return res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
 export default router;

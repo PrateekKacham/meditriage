@@ -216,7 +216,16 @@ export default function Portal() {
           </a>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-blue-200 text-sm font-medium">Patient Portal</span>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => { window.location.href = '/profile'; }}
+              className="w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-500 flex items-center justify-center text-white text-xs font-bold cursor-pointer border-2 border-blue-400 hover:border-blue-300 transition-colors"
+              title="Edit profile"
+            >
+              {`${user?.firstName?.[0] || ''}${user?.lastName?.[0] || ''}`.toUpperCase()}
+            </button>
+            <span className="text-blue-200 text-sm font-medium hidden sm:inline">Patient Portal</span>
+          </div>
           <button
             onClick={handleLogout}
             className="text-blue-200 hover:text-white text-sm border border-blue-700 hover:border-blue-400 px-3 py-1 rounded-lg transition-colors cursor-pointer"

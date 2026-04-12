@@ -8,6 +8,7 @@ import Login        from './pages/Login';
 import Register     from './pages/Register';
 import PatientLogin from './pages/PatientLogin';
 import Portal       from './pages/Portal';
+import Profile      from './pages/Profile';
 
 // ── Shared constants ──────────────────────────────────────────────────────────
 
@@ -249,6 +250,7 @@ export default function App() {
       <Route path="/register"      element={<Register />} />
       <Route path="/patient-login" element={<PatientLogin />} />
       <Route path="/portal"        element={<ProtectedRoute><Portal /></ProtectedRoute>} />
+      <Route path="/profile"       element={<Profile />} />
     </Routes>
   );
 }

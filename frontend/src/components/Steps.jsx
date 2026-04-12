@@ -2,19 +2,19 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+// ── Shared class strings ──────────────────────────────────────────────────────
+const inputCls  = 'border border-gray-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm';
+const labelCls  = 'block text-sm font-medium text-gray-700';
+const fieldCls  = 'mb-4';
+const btnNext   = 'bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg cursor-pointer';
+const btnBack   = 'border border-gray-300 text-gray-600 hover:bg-gray-50 px-6 py-2 rounded-lg cursor-pointer';
+const navRowCls = 'flex justify-between mt-6';
+
 const COMMON_SYMPTOMS = [
   'Headache', 'Fever', 'Cough', 'Shortness of breath',
   'Chest pain', 'Nausea', 'Fatigue', 'Dizziness',
   'Sore throat', 'Muscle aches', 'Loss of appetite', 'Chills',
 ];
-
-// Shared Tailwind class strings
-const inputCls  = 'border border-gray-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm';
-const labelCls  = 'block text-sm font-medium text-gray-700 mb-1';
-const fieldCls  = 'mb-4';
-const btnNext   = 'bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg cursor-pointer';
-const btnBack   = 'border border-gray-300 text-gray-600 hover:bg-gray-50 px-6 py-2 rounded-lg cursor-pointer';
-const navRowCls = 'flex justify-between mt-6';
 
 
 // ─────────────────────────────────────────────────────────
@@ -34,9 +34,10 @@ export function StepOne({ data, update, onNext }) {
     <div>
       <h2 className="text-lg font-semibold text-gray-900 mb-5">Personal information</h2>
 
+      {/* First + last name side by side */}
       <div className="flex gap-3 mb-4">
         <div className="flex-1">
-          <label className={labelCls}>First name *</label>
+          <label className={`${labelCls} mb-1`}>First name *</label>
           <input
             className={inputCls}
             value={data.firstName}
@@ -45,7 +46,7 @@ export function StepOne({ data, update, onNext }) {
           />
         </div>
         <div className="flex-1">
-          <label className={labelCls}>Last name *</label>
+          <label className={`${labelCls} mb-1`}>Last name *</label>
           <input
             className={inputCls}
             value={data.lastName}
@@ -56,7 +57,7 @@ export function StepOne({ data, update, onNext }) {
       </div>
 
       <div className={fieldCls}>
-        <label className={labelCls}>Date of birth *</label>
+        <label className={`${labelCls} mb-1`}>Date of birth *</label>
         <input
           type="date"
           className={inputCls}
@@ -66,8 +67,9 @@ export function StepOne({ data, update, onNext }) {
       </div>
 
       <div className={fieldCls}>
+        {/* Label row — "Filling for someone else?" link only shown when pre-filled */}
         <div className="flex items-baseline justify-between mb-1">
-          <label className={labelCls} style={{ marginBottom: 0 }}>Email *</label>
+          <label className={labelCls}>Email *</label>
           {localStorage.getItem('user') && (
             <button
               type="button"
@@ -88,7 +90,7 @@ export function StepOne({ data, update, onNext }) {
       </div>
 
       <div className={fieldCls}>
-        <label className={labelCls}>Phone</label>
+        <label className={`${labelCls} mb-1`}>Phone</label>
         <input
           className={inputCls}
           value={data.phone}
@@ -134,7 +136,7 @@ export function StepTwo({ data, update, onNext, onBack }) {
       <h2 className="text-lg font-semibold text-gray-900 mb-5">What brings you in today?</h2>
 
       <div className={fieldCls}>
-        <label className={labelCls}>Main concern *</label>
+        <label className={`${labelCls} mb-1`}>Main concern *</label>
         <textarea
           className={`${inputCls} h-28 resize-y`}
           value={data.chiefComplaint}
@@ -171,15 +173,15 @@ export function StepThree({ data, update, onNext, onBack }) {
       <h2 className="text-lg font-semibold text-gray-900 mb-5">Symptoms</h2>
 
       <div className={fieldCls}>
-        <label className={labelCls}>Select all that apply</label>
-        <div className="flex flex-wrap gap-2 mt-2">
+        <label className={`${labelCls} mb-2`}>Select all that apply</label>
+        <div className="flex flex-wrap gap-2">
           {COMMON_SYMPTOMS.map(sym => {
             const selected = data.symptoms.includes(sym);
             return (
               <button
                 key={sym}
                 onClick={() => toggleSymptom(sym)}
-                className={`px-3.5 py-1.5 rounded-full text-sm border cursor-pointer transition-colors ${
+                className={`px-4 py-1.5 rounded-full text-sm border cursor-pointer transition-colors ${
                   selected
                     ? 'bg-blue-600 border-blue-600 text-white font-medium'
                     : 'bg-white border-gray-300 text-gray-600 hover:border-blue-400 hover:text-blue-600'
@@ -193,7 +195,7 @@ export function StepThree({ data, update, onNext, onBack }) {
       </div>
 
       <div className={fieldCls}>
-        <label className={labelCls}>How long have you had these symptoms?</label>
+        <label className={`${labelCls} mb-1`}>How long have you had these symptoms?</label>
         <input
           className={inputCls}
           value={data.symptomDuration}
@@ -232,6 +234,8 @@ export function StepThree({ data, update, onNext, onBack }) {
 // STEP 4 — Medical history & submit
 // ─────────────────────────────────────────────────────────
 
+// TagInput — comma-separated list input with local raw-string state.
+// Splits into an array only on blur so typing spaces doesn't reset the cursor.
 function TagInput({ label, value, onChange, placeholder }) {
   const [raw, setRaw] = useState(value.join(', '));
 
@@ -241,7 +245,7 @@ function TagInput({ label, value, onChange, placeholder }) {
 
   return (
     <div className={fieldCls}>
-      <label className={labelCls}>{label}</label>
+      <label className={`${labelCls} mb-1`}>{label}</label>
       <input
         className={inputCls}
         value={raw}
@@ -298,6 +302,7 @@ export function StepFour({ data, update, onBack, onSubmit, isSubmitting }) {
 // ─────────────────────────────────────────────────────────
 export function Confirmation({ formData }) {
   const navigate = useNavigate();
+
   return (
     <div className="text-center py-6">
 

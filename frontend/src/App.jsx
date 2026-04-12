@@ -1,49 +1,55 @@
 // src/App.jsx
 import { useState, useEffect } from 'react';
-import { Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import { StepOne, StepTwo, StepThree, StepFour, Confirmation } from './components/Steps';
 import { submitIntake } from './api/intake';
-import Dashboard from './pages/Dashboard';
-import Login     from './pages/Login';
-import Register     from './pages/Register';
+import Dashboard   from './pages/Dashboard';
+import Login       from './pages/Login';
+import Register    from './pages/Register';
 import PatientLogin from './pages/PatientLogin';
-import Portal       from './pages/Portal';
+import Portal      from './pages/Portal';
 
-const initialForm = {
+// ── Shared constants ─────────────────────────────────────────────────────────
+
+const STEP_LABELS = ['Personal', 'Complaint', 'Symptoms', 'History'];
+
+const blankForm = {
   firstName: '', lastName: '', dateOfBirth: '', email: '', phone: '',
   chiefComplaint: '',
   symptoms: [], symptomDuration: '', painLevel: 5,
   existingConditions: [], allergies: [], currentMedications: [],
 };
 
-const STEP_LABELS = ['Personal', 'Complaint', 'Symptoms', 'History'];
-
-export default function App() {
+// ── IntakeForm ────────────────────────────────────────────────────────────────
+// Owns all intake form state. Lives at route "/".
+// ─────────────────────────────────────────────────────────────────────────────
+function IntakeForm() {
   const navigate = useNavigate();
 
-  // If a logged-in patient visits /, send them straight to their portal
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    const user = storedUser ? JSON.parse(storedUser) : null;
-    if (token && user?.role === 'patient') {
-      navigate('/portal');
-    }
-  }, []);
-
+  // Read stored patient to pre-fill personal fields
   const storedUser = localStorage.getItem('user');
   const savedUser  = storedUser ? JSON.parse(storedUser) : null;
 
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData]       = useState({
-    ...initialForm,
+  const [formData, setFormData] = useState({
+    ...blankForm,
     firstName: savedUser?.firstName || '',
     lastName:  savedUser?.lastName  || '',
     email:     savedUser?.email     || '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError]             = useState(null);
-  const [submitted, setSubmitted]     = useState(false);
+  const [error, setError]   = useState(null);
+  const [submitted, setSubmitted] = useState(false);
+
+  // Redirect logged-in patients to their portal
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const su    = localStorage.getItem('user');
+    const u     = su ? JSON.parse(su) : null;
+    if (token && u?.role === 'patient') {
+      navigate('/portal');
+    }
+  }, []);
 
   const updateForm = (fields) => setFormData(prev => ({ ...prev, ...fields }));
   const nextStep   = () => setCurrentStep(s => s + 1);
@@ -62,19 +68,31 @@ export default function App() {
     }
   };
 
-  const intakeForm = submitted ? (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="max-w-xl mx-auto py-10 px-4">
-        <div className="text-center mb-8">
-          <span className="text-4xl text-blue-600">✚</span>
-          <h1 className="text-2xl font-bold text-blue-600 mt-2">MediTriage</h1>
-        </div>
-        <div className="bg-white rounded-2xl shadow-md p-8">
-          <Confirmation formData={formData} />
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.reload();
+  };
+
+  // ── Confirmation screen ───────────────────────────────────────────────────
+  if (submitted) {
+    return (
+      <div className="bg-gray-50 min-h-screen">
+        <div className="max-w-xl mx-auto py-10 px-4">
+          <div className="text-center mb-8">
+            <span className="text-4xl text-blue-600">✚</span>
+            <h1 className="text-2xl font-bold text-blue-600 mt-2">MediTriage</h1>
+          </div>
+          <div className="bg-white rounded-2xl shadow-md p-8">
+            <Confirmation formData={formData} />
+          </div>
         </div>
       </div>
-    </div>
-  ) : (
+    );
+  }
+
+  // ── Intake form ───────────────────────────────────────────────────────────
+  return (
     <div className="bg-gray-50 min-h-screen">
       <div className="max-w-xl mx-auto py-10 px-4">
 
@@ -137,18 +155,36 @@ export default function App() {
             </div>
           )}
         </div>
+
+        {/* ── Signed-in note ── */}
+        {savedUser && (
+          <p className="text-center text-xs text-gray-400 mt-4">
+            Signed in as {savedUser.email} ·{' '}
+            <button
+              onClick={handleLogout}
+              className="hover:text-gray-600 underline cursor-pointer"
+            >
+              Not you? Log out
+            </button>
+          </p>
+        )}
       </div>
     </div>
   );
+}
 
+// ── App ───────────────────────────────────────────────────────────────────────
+// Root component — just owns the route table.
+// ─────────────────────────────────────────────────────────────────────────────
+export default function App() {
   return (
     <Routes>
-      <Route path="/"          element={intakeForm} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/login"     element={<Login />} />
-      <Route path="/register"     element={<Register />} />
+      <Route path="/"           element={<IntakeForm />} />
+      <Route path="/dashboard"  element={<Dashboard />} />
+      <Route path="/login"      element={<Login />} />
+      <Route path="/register"   element={<Register />} />
       <Route path="/patient-login" element={<PatientLogin />} />
-      <Route path="/portal"        element={<Portal />} />
+      <Route path="/portal"     element={<Portal />} />
     </Routes>
   );
 }

@@ -23,7 +23,10 @@ router.post('/login', (req, res) => {
   }
 
   const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '8h' });
-  return res.status(200).json({ token });
+  return res.status(200).json({
+    token,
+    user: { firstName: 'Doctor', lastName: '', email: DOCTOR.email, role: 'doctor' },
+  });
 });
 
 // ── POST /api/auth/register ───────────────────────────────────────────────────

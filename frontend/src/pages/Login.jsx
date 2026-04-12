@@ -27,7 +27,8 @@ export default function Login() {
       const data = await res.json();
       if (!res.ok) { setError(data.message || 'Login failed'); return; }
       localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      const userToStore = data.user ?? { firstName: 'Doctor', lastName: '', email: '', role: 'doctor' };
+      localStorage.setItem('user', JSON.stringify(userToStore));
       window.location.href = '/dashboard';
     } catch {
       setError('Could not connect to server. Please try again.');

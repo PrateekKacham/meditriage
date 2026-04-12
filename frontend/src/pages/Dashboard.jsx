@@ -1,6 +1,6 @@
 // src/pages/Dashboard.jsx
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -32,6 +32,14 @@ function DetailRow({ label, value }) {
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate();
+
+  // Guard: redirect to login if no token
+  if (!localStorage.getItem('token')) {
+    navigate('/login');
+    return null;
+  }
+
   const [patients, setPatients]   = useState([]);
   const [loading, setLoading]     = useState(true);
   const [expandedId, setExpandedId]     = useState(null);
@@ -105,7 +113,15 @@ export default function Dashboard() {
           <span className="text-white text-lg font-bold tracking-wide">MediTriage</span>
           <Link to="/" className="text-blue-200 hover:text-white text-sm ml-6">← Intake Form</Link>
         </div>
-        <span className="text-blue-200 text-sm font-medium">Doctor Dashboard</span>
+        <div className="flex items-center gap-4">
+          <span className="text-blue-200 text-sm font-medium">Doctor Dashboard</span>
+          <button
+            onClick={() => { localStorage.removeItem('token'); navigate('/login'); }}
+            className="text-blue-200 hover:text-white text-sm border border-blue-700 hover:border-blue-400 px-3 py-1 rounded-lg transition-colors cursor-pointer"
+          >
+            Logout
+          </button>
+        </div>
       </nav>
 
       <div className="max-w-3xl mx-auto px-4 py-8">

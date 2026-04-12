@@ -4,6 +4,7 @@ import { Routes, Route, Link } from 'react-router-dom';
 import { StepOne, StepTwo, StepThree, StepFour, Confirmation } from './components/Steps';
 import { submitIntake } from './api/intake';
 import Dashboard from './pages/Dashboard';
+import Login     from './pages/Login';
 
 const initialForm = {
   firstName: '', lastName: '', dateOfBirth: '', email: '', phone: '',
@@ -121,6 +122,7 @@ export default function App() {
     <Routes>
       <Route path="/"          element={intakeForm} />
       <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/login"     element={<Login />} />
     </Routes>
   );
 }

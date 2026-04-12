@@ -17,8 +17,10 @@
 //     ↑ calls update({ fieldName: value }) to change parent's state
 
 import { useState } from 'react';
+import { Routes, Route, Link } from 'react-router-dom';
 import { StepOne, StepTwo, StepThree, StepFour, Confirmation } from './components/Steps';
 import { submitIntake } from './api/intake';
+import Dashboard from './pages/Dashboard';
 
 // The initial shape of ALL form data — one object covering all 4 steps
 // Every field starts empty or at a sensible default
@@ -81,12 +83,10 @@ export default function App() {
     }
   };
 
-  // If submitted successfully, show Confirmation screen instead of the form
-  if (submitted) {
-    return <Confirmation formData={formData} />;
-  }
-
-  return (
+  // The intake form — shown at "/" after a successful submit it swaps to Confirmation
+  const intakeForm = submitted ? (
+    <Confirmation formData={formData} />
+  ) : (
     <div style={{
       maxWidth: 560,
       margin: '2rem auto',
@@ -158,5 +158,12 @@ export default function App() {
         </div>
       )}
     </div>
+  );
+
+  return (
+    <Routes>
+      <Route path="/" element={intakeForm} />
+      <Route path="/dashboard" element={<Dashboard />} />
+    </Routes>
   );
 }

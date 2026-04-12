@@ -17,6 +17,7 @@
 
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 import './index.css';  // global styles (currently empty — that's fine)
 import App from './App';
 
@@ -25,9 +26,10 @@ import App from './App';
 // .render() puts the App component inside it
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    {/* StrictMode is a development helper — it runs your components
-        twice in development to help catch bugs early.
-        It has NO effect in production. */}
-    <App />
+    {/* BrowserRouter enables client-side routing for the whole app.
+        It must wrap everything that uses Routes, Route, or Link. */}
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </StrictMode>
 );

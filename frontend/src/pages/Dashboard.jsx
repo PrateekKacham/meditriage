@@ -34,7 +34,8 @@ function DetailRow({ label, value }) {
 export default function Dashboard() {
   const [patients, setPatients]   = useState([]);
   const [loading, setLoading]     = useState(true);
-  const [expandedId, setExpandedId] = useState(null);
+  const [expandedId, setExpandedId]   = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetch(`${API}/api/intake`)
@@ -60,6 +61,15 @@ export default function Dashboard() {
   // Derived stats
   const urgentCount  = patients.filter(p => p.urgency === 'Emergency' || p.urgency === 'Urgent').length;
   const pendingCount = patients.filter(p => !p.status || p.status === 'pending').length;
+
+  // Filtered list — matches on full name or chief complaint (case-insensitive)
+  const q = searchQuery.toLowerCase();
+  const filteredPatients = q
+    ? patients.filter(p =>
+        `${p.firstName} ${p.lastName}`.toLowerCase().includes(q) ||
+        (p.chiefComplaint || '').toLowerCase().includes(q)
+      )
+    : patients;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -92,9 +102,18 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* ── Search bar ── */}
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          placeholder="Search by name or chief complaint..."
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+        />
+
         {/* ── Patient cards ── */}
         <div className="flex flex-col gap-3">
-          {patients.map(patient => {
+          {filteredPatients.map(patient => {
             const isExpanded   = expandedId === patient._id;
             const borderCls    = URGENCY_LEFT_BORDER[patient.urgency] ?? 'border-l-4 border-gray-300';
             const badgeCls     = URGENCY_BADGE[patient.urgency]       ?? 'bg-gray-100 text-gray-700 border border-gray-300';
@@ -187,8 +206,10 @@ export default function Dashboard() {
             );
           })}
 
-          {patients.length === 0 && (
-            <p className="text-sm text-gray-500">No patients on record yet.</p>
+          {filteredPatients.length === 0 && (
+            <p className="text-sm text-gray-500">
+              {searchQuery ? 'No patients match your search.' : 'No patients on record yet.'}
+            </p>
           )}
         </div>
       </div>

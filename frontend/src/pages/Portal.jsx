@@ -247,7 +247,19 @@ export default function Portal() {
 
         {/* ── Content ── */}
         {loading ? (
-          <p className="text-sm text-gray-500">Loading your submissions...</p>
+          <div className="flex flex-col gap-4">
+            {[1,2].map(n => (
+              <div key={n} className="bg-white rounded-xl shadow-sm border-l-4 border-gray-200 px-5 py-4 animate-pulse">
+                <div className="flex justify-between mb-3">
+                  <div className="h-3 bg-gray-200 rounded w-24" />
+                  <div className="h-5 bg-gray-200 rounded-full w-16" />
+                </div>
+                <div className="h-4 bg-gray-200 rounded w-full mb-2" />
+                <div className="h-3 bg-gray-100 rounded w-3/4 mb-2" />
+                <div className="h-3 bg-gray-100 rounded w-5/6" />
+              </div>
+            ))}
+          </div>
         ) : submissions.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500 mb-4">No submissions yet. Submit your first intake form.</p>

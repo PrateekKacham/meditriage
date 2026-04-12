@@ -112,4 +112,32 @@ router.patch("/:id/status", async (req, res) => {
   }
 });
 
+// ── POST /api/intake/:id/retriage ────────────────────────────────────────────
+// Re-runs AI triage on an existing intake record.
+// ─────────────────────────────────────────────────────────────────────────────
+router.post('/:id/retriage', async (req, res) => {
+  try {
+    const intake = await Intake.findById(req.params.id);
+    if (!intake) {
+      return res.status(404).json({ message: 'Intake not found' });
+    }
+    const { runTriageAgent } = await import('../services/triageAgent.js');
+    const triageResult = await runTriageAgent(intake);
+    const updated = await Intake.findByIdAndUpdate(
+      req.params.id,
+      {
+        urgency:       triageResult.urgency,
+        urgencyReason: triageResult.urgencyReason,
+        doctorSummary: triageResult.doctorSummary,
+        extractedData: triageResult.extractedData,
+      },
+      { new: true }
+    );
+    return res.status(200).json({ message: 'Re-triaged successfully', data: updated });
+  } catch (err) {
+    console.error('POST /api/intake/:id/retriage error:', err.message);
+    return res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
 export default router;

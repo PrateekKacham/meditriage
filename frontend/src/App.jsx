@@ -1,5 +1,5 @@
 // src/App.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
 import { StepOne, StepTwo, StepThree, StepFour, Confirmation } from './components/Steps';
 import { submitIntake } from './api/intake';
@@ -131,6 +131,8 @@ function DoctorRoute({ children }) {
   return children;
 }
 
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 // ── IntakeForm ────────────────────────────────────────────────────────────────
 function IntakeForm() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -138,6 +140,31 @@ function IntakeForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError]   = useState(null);
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('user');
+    let u = null;
+    try { u = stored ? JSON.parse(stored) : null; } catch {}
+    if (!u?.email) return;
+
+    fetch(`${API}/api/intake`)
+      .then(res => res.json())
+      .then(result => {
+        const mine = (result.data || []).filter(
+          s => s.email?.toLowerCase() === u.email.toLowerCase()
+        );
+        if (mine.length > 0) {
+          const last = mine[0]; // already sorted newest first
+          setFormData(prev => ({
+            ...prev,
+            existingConditions: last.existingConditions?.length ? last.existingConditions : prev.existingConditions,
+            allergies:          last.allergies?.length          ? last.allergies          : prev.allergies,
+            currentMedications: last.currentMedications?.length ? last.currentMedications : prev.currentMedications,
+          }));
+        }
+      })
+      .catch(() => {}); // silently fail — pre-fill is a nice-to-have
+  }, []);
 
   const updateForm = (fields) => setFormData(prev => ({ ...prev, ...fields }));
   const nextStep   = () => setCurrentStep(s => s + 1);

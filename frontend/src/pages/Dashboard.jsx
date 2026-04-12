@@ -60,6 +60,7 @@ export default function Dashboard() {
   const [expandedId, setExpandedId]     = useState(null);
   const [toast, setToast]               = useState('');
   const showToast = (msg) => setToast(msg);
+  const [retriagingId, setRetriagingId] = useState(null);
   const [searchQuery, setSearchQuery]   = useState('');
   const [urgencyFilter, setUrgencyFilter] = useState('All');
   const [statusFilter, setStatusFilter]   = useState('All');
@@ -80,11 +81,59 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500 text-sm">Loading patients...</p>
+      <div className="min-h-screen bg-gray-50">
+        <nav className="bg-blue-900 px-6 py-4 flex items-center justify-between shadow-md">
+          <div className="flex items-center gap-2">
+            <span className="text-white text-xl">✚</span>
+            <span className="text-white text-lg font-bold tracking-wide">MediTriage</span>
+          </div>
+          <span className="text-blue-200 text-sm font-medium">Doctor Dashboard</span>
+        </nav>
+        <div className="max-w-3xl mx-auto px-4 py-8">
+          <div className="grid grid-cols-3 gap-4 mb-8">
+            {[1,2,3].map(n => (
+              <div key={n} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 animate-pulse">
+                <div className="h-8 bg-gray-200 rounded mb-2 w-16 mx-auto" />
+                <div className="h-3 bg-gray-100 rounded w-24 mx-auto" />
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-col gap-3">
+            {[1,2,3,4].map(n => (
+              <div key={n} className="bg-white rounded-xl shadow-sm border-l-4 border-gray-200 px-5 py-4 animate-pulse">
+                <div className="flex justify-between mb-3">
+                  <div className="h-4 bg-gray-200 rounded w-32" />
+                  <div className="h-4 bg-gray-200 rounded w-16" />
+                </div>
+                <div className="h-3 bg-gray-100 rounded w-full mb-2" />
+                <div className="h-3 bg-gray-100 rounded w-2/3" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
+
+  const handleRetriage = async (id) => {
+    setRetriagingId(id);
+    try {
+      const res = await fetch(`${API}/api/intake/${id}/retriage`, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        setPatients(prev =>
+          prev.map(p => p._id === id ? { ...p, ...data.data } : p)
+        );
+        showToast('AI re-analysis complete');
+      } else {
+        showToast('Re-triage failed — try again');
+      }
+    } catch {
+      showToast('Could not connect to server');
+    } finally {
+      setRetriagingId(null);
+    }
+  };
 
   // Derived stats
   const urgentCount  = patients.filter(p => p.urgency === 'Emergency' || p.urgency === 'Urgent').length;
@@ -285,6 +334,27 @@ export default function Dashboard() {
                           <option value="seen">Seen</option>
                           <option value="needs-follow-up">Needs follow-up</option>
                         </select>
+                      </div>
+
+                      {/* Re-triage button */}
+                      <div
+                        className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-3"
+                        onClick={e => e.stopPropagation()}
+                      >
+                        <button
+                          onClick={() => handleRetriage(patient._id)}
+                          disabled={retriagingId === patient._id}
+                          className={`text-sm px-4 py-1.5 rounded-lg border transition-colors cursor-pointer
+                            ${retriagingId === patient._id
+                              ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                              : 'bg-white border-blue-300 text-blue-600 hover:bg-blue-50'
+                            }`}
+                        >
+                          {retriagingId === patient._id ? '⏳ Re-analyzing...' : '🔄 Re-analyze with AI'}
+                        </button>
+                        {retriagingId === patient._id && (
+                          <span className="text-xs text-gray-400">This takes a few seconds...</span>
+                        )}
                       </div>
                     </div>
                   )}

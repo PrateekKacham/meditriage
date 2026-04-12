@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 5000; // ← must be uppercase PORT, not port
 
 // cors() allows requests from a different origin (our React app on port 5173)
 // Without this, the browser would block the request for security reasons
-app.use(cors());
+app.use(cors({ origin: 'https://meditriage-five.vercel.app' }));
 
 // express.json() automatically parses incoming JSON request bodies
 // Without this, req.body would be undefined when the frontend sends form data

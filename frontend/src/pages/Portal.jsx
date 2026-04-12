@@ -32,8 +32,13 @@ const URGENCY_LEFT_BORDER = {
 
 export default function Portal() {
   const navigate = useNavigate();
-  const storedUser = localStorage.getItem('user');
-  const user = storedUser ? JSON.parse(storedUser) : null;
+  let user = null;
+  try {
+    const storedUser = localStorage.getItem('user');
+    user = storedUser ? JSON.parse(storedUser) : null;
+  } catch {
+    localStorage.removeItem('user');
+  }
 
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading]         = useState(true);

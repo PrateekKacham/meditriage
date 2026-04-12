@@ -21,20 +21,30 @@ const blankForm = {
 };
 
 function getInitialForm() {
-  const storedUser = localStorage.getItem('user');
-  const u = storedUser ? JSON.parse(storedUser) : null;
-  return {
-    ...blankForm,
-    firstName: u?.firstName || '',
-    lastName:  u?.lastName  || '',
-    email:     u?.email     || '',
-  };
+  try {
+    const storedUser = localStorage.getItem('user');
+    const u = storedUser ? JSON.parse(storedUser) : null;
+    return {
+      ...blankForm,
+      firstName: u?.firstName || '',
+      lastName:  u?.lastName  || '',
+      email:     u?.email     || '',
+    };
+  } catch {
+    localStorage.removeItem('user');
+    return { ...blankForm };
+  }
 }
 
 // ── Navbar ────────────────────────────────────────────────────────────────────
 function Navbar() {
-  const storedUser = localStorage.getItem('user');
-  const user = storedUser ? JSON.parse(storedUser) : null;
+  let user = null;
+  try {
+    const storedUser = localStorage.getItem('user');
+    user = storedUser ? JSON.parse(storedUser) : null;
+  } catch {
+    localStorage.removeItem('user');
+  }
   const token = localStorage.getItem('token');
   const role  = user?.role;
 
@@ -83,20 +93,12 @@ function Navbar() {
             </button>
           </>
         ) : (
-          <>
-            <Link
-              to="/dashboard"
-              className="text-blue-200 hover:text-white text-sm border border-blue-700 hover:border-blue-400 px-3 py-1 rounded-lg transition-colors"
-            >
-              Dashboard
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="text-blue-200 hover:text-white text-sm border border-blue-700 hover:border-blue-400 px-3 py-1 rounded-lg transition-colors cursor-pointer"
-            >
-              Logout
-            </button>
-          </>
+          <button
+            onClick={handleLogout}
+            className="text-blue-200 hover:text-white text-sm border border-blue-700 hover:border-blue-400 px-3 py-1 rounded-lg transition-colors cursor-pointer"
+          >
+            Logout
+          </button>
         )}
       </div>
     </nav>
@@ -114,8 +116,13 @@ function ProtectedRoute({ children }) {
 
 // ── DoctorRoute — redirects non-doctors to patient login ─────────────────────
 function DoctorRoute({ children }) {
-  const storedUser = localStorage.getItem('user');
-  const u = storedUser ? JSON.parse(storedUser) : null;
+  let u = null;
+  try {
+    const storedUser = localStorage.getItem('user');
+    u = storedUser ? JSON.parse(storedUser) : null;
+  } catch {
+    localStorage.removeItem('user');
+  }
   if (!localStorage.getItem('token') || u?.role !== 'doctor') {
     window.location.href = '/patient-login';
     return null;

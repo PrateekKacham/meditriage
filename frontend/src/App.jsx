@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import Login     from './pages/Login';
 import Register     from './pages/Register';
 import PatientLogin from './pages/PatientLogin';
+import Portal       from './pages/Portal';
 
 const initialForm = {
   firstName: '', lastName: '', dateOfBirth: '', email: '', phone: '',
@@ -127,6 +128,7 @@ export default function App() {
       <Route path="/login"     element={<Login />} />
       <Route path="/register"     element={<Register />} />
       <Route path="/patient-login" element={<PatientLogin />} />
+      <Route path="/portal"        element={<Portal />} />
     </Routes>
   );
 }

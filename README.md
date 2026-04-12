@@ -1,12 +1,23 @@
 # MediTriage — AI-Powered Patient Intake & Triage
 
-MediTriage is a full-stack web application that digitizes the patient intake process for medical practices. Patients complete a 4-step intake form before their appointment — capturing personal information, chief complaint, symptoms, and medical history. Once submitted, an AI agent (Llama 3 via Groq) automatically analyzes the patient's symptoms, medical history, and current medications to assign a clinical urgency level (Emergency / Urgent / Semi-Urgent / Non-Urgent) and generate a concise summary for the receiving physician. Patients can review their AI triage assessment and appointment status in a personal portal, while doctors access a protected dashboard to review, filter, search, and manage all incoming cases.
+MediTriage is a full-stack web application that digitizes the patient intake process for medical practices. Patients complete a 4-step intake form before their appointment — capturing personal information, chief complaint, symptoms, and medical history. Once submitted, an AI agent (Llama 4 Scout via Groq) automatically analyzes the patient's data to assign a clinical urgency level and generate a physician-ready summary. Patients track their case status in a personal portal; doctors manage all incoming cases in a protected dashboard.
 
 ---
 
-## Why This Project
+## Features
 
-MediTriage mirrors what companies like EliseAI and PathAI build at production scale — combining full-stack engineering with real LLM integration in a healthcare context. It demonstrates end-to-end ownership of a system that handles user authentication, structured data collection, AI inference, and role-based access control, all in a domain where accuracy and reliability matter.
+- **4-step intake form** with client-side validation, phone auto-formatting, and pre-fill from prior submissions
+- **AI triage** assigns Emergency / Urgent / Semi-Urgent / Non-Urgent with a plain-English clinical reason and doctor summary
+- **Patient portal** shows AI assessment, appointment status, and full submission history
+- **PDF report download** — jsPDF generates a formatted intake report client-side, no server round-trip
+- **Doctor dashboard** with real-time search, urgency filter buttons, status dropdown, and sort controls (newest, oldest, urgency, name)
+- **Pagination** — dashboard shows 8 patients per page with page number buttons and prev/next navigation
+- **Re-triage** — doctors can re-run the AI on any existing intake record from the expanded card view
+- **Status management** — doctors update per-patient status (Pending / Seen / Needs follow-up) with a single dropdown
+- **JWT authentication** with separate patient and doctor login flows and role-based route protection
+- **Patient registration** with password strength meter and confirm-password mismatch detection
+- **Email confirmation** — Nodemailer sends a styled HTML confirmation email to the patient after every intake
+- **Profile editing** — patients update their name, phone, and date of birth from the portal
 
 ---
 
@@ -14,42 +25,43 @@ MediTriage mirrors what companies like EliseAI and PathAI build at production sc
 
 | Layer      | Technology |
 |------------|------------|
-| Frontend   | React + Vite, Tailwind CSS v4 — deployed on Vercel |
-| Backend    | Node.js + Express — deployed on Render |
-| Database   | MongoDB Atlas |
-| AI         | Groq API — Llama 4 Scout (meta-llama/llama-4-scout-17b-16e-instruct) |
+| Frontend   | React 18 + Vite, Tailwind CSS v4 |
+| Backend    | Node.js + Express |
+| Database   | MongoDB Atlas (Mongoose) |
+| AI         | Groq API — `meta-llama/llama-4-scout-17b-16e-instruct` |
 | Auth       | JWT + bcrypt |
-
----
-
-## Key Features
-
-- 4-step patient intake form with client-side validation and phone formatting
-- AI triage agent assigns Emergency / Urgent / Semi-Urgent / Non-Urgent with a plain-English reason
-- Patient portal showing AI assessment, doctor status, and intake history
-- Doctor dashboard with search, urgency filters, status filters, and sort controls
-- JWT authentication with separate patient and doctor login flows
-- PDF report download from the patient portal (generated client-side with jsPDF)
-- Route protection — patients and doctors see only what they should
+| Email      | Nodemailer + Gmail SMTP |
+| PDF        | jsPDF (client-side) |
+| Hosting    | Frontend → Vercel, Backend → Render |
 
 ---
 
 ## Architecture
 
 ```
-Patient submits 4-step form
-  → Express POST /api/intake saves record to MongoDB
-  → Groq Llama 4 Scout triages the submission (urgency + clinical summary)
-  → Triage result saved back to the MongoDB record
-  → Patient sees urgency level and summary in their portal
-  → Doctor reviews all cases in the dashboard, updates status per patient
+Patient fills 4-step intake form
+  → POST /api/intake  — saves raw form data to MongoDB immediately
+  → Groq Llama 4 Scout triages the submission
+      (urgency level + urgency reason + doctor summary + extracted data)
+  → Triage result patched back onto the MongoDB record
+  → Nodemailer sends HTML confirmation email to patient (fire-and-forget)
+  → Frontend receives the fully-triaged record and shows Confirmation screen
+
+Patient portal (GET /api/intake, filtered by email)
+  → Shows all submissions with urgency badge, status, assessment, and summary
+  → PDF download generated client-side from submission data
+
+Doctor dashboard (GET /api/intake, all records)
+  → Search, filter, sort, paginate client-side
+  → PATCH /api/intake/:id/status  — update patient status
+  → POST  /api/intake/:id/retriage — re-run AI triage on demand
 ```
 
 ---
 
 ## Live Demo
 
-- **Frontend:** https://meditriage-five.vercel.app
+- **App:** https://meditriage-five.vercel.app
 - **Doctor login:** `doctor@meditriage.com` / `doctor123`
 
 ---
@@ -62,37 +74,37 @@ git clone <repo-url>
 cd AI_Patient_Intake+Symptom_Triage_App
 
 # 2. Install backend dependencies
-cd backend
-npm install
+cd backend && npm install
 
 # 3. Install frontend dependencies
-cd ../frontend
-npm install
+cd ../frontend && npm install
 
 # 4. Create backend/.env (see Environment Variables below)
 
-# 5. Run the backend (from /backend)
-npm start
+# 5. Start the backend  (http://localhost:5000)
+cd backend && npm start
 
-# 6. Run the frontend (from /frontend)
-npm run dev
+# 6. Start the frontend (http://localhost:5173)
+cd frontend && npm run dev
 ```
 
 ---
 
 ## Environment Variables
 
-### Backend (`backend/.env`)
+### `backend/.env`
 
 | Variable       | Description |
 |----------------|-------------|
 | `MONGO_URI`    | MongoDB Atlas connection string |
-| `GROQ_API_KEY` | Groq API key (get one at console.groq.com) |
+| `GROQ_API_KEY` | Groq API key — get one free at console.groq.com |
 | `JWT_SECRET`   | Secret string used to sign JWTs |
-| `PORT`         | Port for the Express server (default: 5000) |
+| `PORT`         | Express server port (default: `5000`) |
+| `EMAIL_USER`   | Gmail address used to send confirmation emails |
+| `EMAIL_PASS`   | Gmail App Password (not your account password) |
 
-### Frontend (`frontend/.env`)
+### `frontend/.env`
 
-| Variable        | Description |
-|-----------------|-------------|
-| `VITE_API_URL`  | Base URL of the backend API (e.g. `http://localhost:5000`) |
+| Variable       | Description |
+|----------------|-------------|
+| `VITE_API_URL` | Backend base URL — e.g. `http://localhost:5000` |

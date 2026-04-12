@@ -141,7 +141,11 @@ export function StepTwo({ data, update, onNext, onBack }) {
           value={data.chiefComplaint}
           onChange={e => update({ chiefComplaint: e.target.value })}
           placeholder="Describe your main symptom or reason for visiting..."
+          maxLength={500}
         />
+        <p className="text-xs text-gray-400 mt-1 text-right">
+          {data.chiefComplaint.length} / 500
+        </p>
       </div>
 
       <div className={navRowCls}>
@@ -320,6 +324,11 @@ export function Confirmation({ formData }) {
         <p><strong className="text-gray-900">Symptoms:</strong> {formData.symptoms.length > 0 ? formData.symptoms.join(', ') : 'None selected'}</p>
         <p><strong className="text-gray-900">Pain level:</strong> {formData.painLevel} / 10</p>
         <p><strong className="text-gray-900">Duration:</strong> {formData.symptomDuration || 'Not specified'}</p>
+        {formData.email && (
+          <p className="text-xs text-gray-500 pt-1 border-t border-gray-200 mt-2">
+            Confirmation sent to: <span className="font-medium">{formData.email}</span>
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col items-center gap-3 mt-6">

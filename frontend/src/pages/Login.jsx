@@ -11,6 +11,10 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
+    document.title = 'Doctor Login — MediTriage';
+  }, []);
+
+  useEffect(() => {
     if (localStorage.getItem('token')) window.location.href = '/dashboard';
   }, []);
 

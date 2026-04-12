@@ -1,6 +1,6 @@
 // src/App.jsx
 import { useState, useEffect } from 'react';
-import { Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { StepOne, StepTwo, StepThree, StepFour, Confirmation } from './components/Steps';
 import { submitIntake } from './api/intake';
 import Dashboard    from './pages/Dashboard';
@@ -9,6 +9,16 @@ import Register     from './pages/Register';
 import PatientLogin from './pages/PatientLogin';
 import Portal       from './pages/Portal';
 import Profile      from './pages/Profile';
+import NotFound     from './pages/NotFound';
+
+// ── ScrollToTop — scrolls to top on every route change ───────────────────────
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
 
 // ── Shared constants ──────────────────────────────────────────────────────────
 
@@ -166,6 +176,10 @@ function IntakeForm() {
       .catch(() => {}); // silently fail — pre-fill is a nice-to-have
   }, []);
 
+  useEffect(() => {
+    document.title = 'MediTriage — Patient Intake';
+  }, []);
+
   const updateForm = (fields) => setFormData(prev => ({ ...prev, ...fields }));
   const nextStep   = () => setCurrentStep(s => s + 1);
   const prevStep   = () => setCurrentStep(s => s - 1);
@@ -270,14 +284,18 @@ function IntakeForm() {
 // ── App ───────────────────────────────────────────────────────────────────────
 export default function App() {
   return (
-    <Routes>
-      <Route path="/"              element={<ProtectedRoute><IntakeForm /></ProtectedRoute>} />
-      <Route path="/dashboard"     element={<DoctorRoute><Dashboard /></DoctorRoute>} />
-      <Route path="/login"         element={<Login />} />
-      <Route path="/register"      element={<Register />} />
-      <Route path="/patient-login" element={<PatientLogin />} />
-      <Route path="/portal"        element={<ProtectedRoute><Portal /></ProtectedRoute>} />
-      <Route path="/profile"       element={<Profile />} />
-    </Routes>
+    <>
+      <ScrollToTop />
+      <Routes>
+        <Route path="/"              element={<ProtectedRoute><IntakeForm /></ProtectedRoute>} />
+        <Route path="/dashboard"     element={<DoctorRoute><Dashboard /></DoctorRoute>} />
+        <Route path="/login"         element={<Login />} />
+        <Route path="/register"      element={<Register />} />
+        <Route path="/patient-login" element={<PatientLogin />} />
+        <Route path="/portal"        element={<ProtectedRoute><Portal /></ProtectedRoute>} />
+        <Route path="/profile"       element={<Profile />} />
+        <Route path="*"              element={<NotFound />} />
+      </Routes>
+    </>
   );
 }

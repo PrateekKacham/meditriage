@@ -1,5 +1,5 @@
 // src/pages/Profile.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -27,6 +27,10 @@ export default function Profile() {
   const [success,     setSuccess]     = useState('');
   const [error,       setError]       = useState('');
   const [isLoading,   setIsLoading]   = useState(false);
+
+  useEffect(() => {
+    document.title = 'My Profile — MediTriage';
+  }, []);
 
   const initials = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase();
 

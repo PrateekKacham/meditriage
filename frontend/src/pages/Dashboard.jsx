@@ -48,6 +48,10 @@ function DetailRow({ label, value }) {
 export default function Dashboard() {
   const navigate = useNavigate();
 
+  useEffect(() => {
+    document.title = 'Dashboard — MediTriage';
+  }, []);
+
   // Guard: redirect to login if no token
   useEffect(() => {
     if (!localStorage.getItem('token')) {

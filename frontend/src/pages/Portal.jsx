@@ -45,6 +45,10 @@ export default function Portal() {
   const [loading, setLoading]         = useState(true);
 
   useEffect(() => {
+    document.title = 'My Portal — MediTriage';
+  }, []);
+
+  useEffect(() => {
     if (!localStorage.getItem('token')) {
       navigate('/patient-login');
       return;

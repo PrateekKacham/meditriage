@@ -63,6 +63,10 @@ export default function Register() {
   const [showConfirm, setShowConfirm]     = useState(false);
 
   useEffect(() => {
+    document.title = 'Register — MediTriage';
+  }, []);
+
+  useEffect(() => {
     if (localStorage.getItem('token')) navigate('/portal');
   }, []);
 

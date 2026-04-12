@@ -14,6 +14,10 @@ export default function PatientLogin() {
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
+    document.title = 'Patient Login — MediTriage';
+  }, []);
+
+  useEffect(() => {
     if (localStorage.getItem('token')) navigate('/portal');
   }, []);
 

@@ -1,6 +1,6 @@
 // src/App.jsx
-import { useState } from 'react';
-import { Routes, Route, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { StepOne, StepTwo, StepThree, StepFour, Confirmation } from './components/Steps';
 import { submitIntake } from './api/intake';
 import Dashboard from './pages/Dashboard';
@@ -19,6 +19,18 @@ const initialForm = {
 const STEP_LABELS = ['Personal', 'Complaint', 'Symptoms', 'History'];
 
 export default function App() {
+  const navigate = useNavigate();
+
+  // If a logged-in patient visits /, send them straight to their portal
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    const user = storedUser ? JSON.parse(storedUser) : null;
+    if (token && user?.role === 'patient') {
+      navigate('/portal');
+    }
+  }, []);
+
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData]       = useState(initialForm);
   const [isSubmitting, setIsSubmitting] = useState(false);

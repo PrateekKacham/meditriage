@@ -11,6 +11,18 @@ const URGENCY_BADGE = {
   'Non-Urgent':  'bg-green-100 text-green-800 border border-green-300',
 };
 
+const STATUS_BADGE = {
+  'pending':         'bg-gray-100 text-gray-600 border border-gray-300',
+  'seen':            'bg-green-100 text-green-700 border border-green-300',
+  'needs-follow-up': 'bg-blue-100 text-blue-700 border border-blue-300',
+};
+
+const STATUS_LABEL = {
+  'pending':         'Pending',
+  'seen':            'Seen',
+  'needs-follow-up': 'Needs follow-up',
+};
+
 const URGENCY_LEFT_BORDER = {
   'Emergency':   'border-l-4 border-red-500',
   'Urgent':      'border-l-4 border-orange-400',
@@ -81,7 +93,7 @@ export default function Portal() {
         {/* ── Welcome message ── */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">
-            Welcome back, {user?.firstName}!
+            {!loading && submissions.length > 0 ? 'Welcome back' : 'Welcome'}, {user?.firstName}!
           </h1>
           <p className="text-sm text-gray-500 mt-1">Your intake submission history</p>
         </div>
@@ -102,8 +114,11 @@ export default function Portal() {
         ) : (
           <div className="flex flex-col gap-4">
             {submissions.map(s => {
-              const borderCls = URGENCY_LEFT_BORDER[s.urgency] ?? 'border-l-4 border-gray-300';
-              const badgeCls  = URGENCY_BADGE[s.urgency]       ?? 'bg-gray-100 text-gray-700 border border-gray-300';
+              const borderCls    = URGENCY_LEFT_BORDER[s.urgency]             ?? 'border-l-4 border-gray-300';
+              const badgeCls     = URGENCY_BADGE[s.urgency]                   ?? 'bg-gray-100 text-gray-700 border border-gray-300';
+              const statusKey    = s.status || 'pending';
+              const statusCls    = STATUS_BADGE[statusKey]                    ?? STATUS_BADGE['pending'];
+              const statusLabel  = STATUS_LABEL[statusKey]                    ?? 'Pending';
               const submitted = s.createdAt
                 ? new Date(s.createdAt).toLocaleDateString('en-US', {
                     year: 'numeric', month: 'short', day: 'numeric',
@@ -115,12 +130,17 @@ export default function Portal() {
                   key={s._id}
                   className={`bg-white rounded-xl shadow-sm ${borderCls} px-5 py-4`}
                 >
-                  {/* Date + urgency badge */}
+                  {/* Date + urgency badge + status badge */}
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs text-gray-400">Submitted {submitted}</span>
-                    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${badgeCls}`}>
-                      {s.urgency ?? 'Pending review'}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${badgeCls}`}>
+                        {s.urgency ?? 'Pending review'}
+                      </span>
+                      <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${statusCls}`}>
+                        {statusLabel}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Chief complaint */}

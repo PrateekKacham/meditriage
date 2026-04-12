@@ -66,7 +66,18 @@ export function StepOne({ data, update, onNext }) {
       </div>
 
       <div className={fieldCls}>
-        <label className={labelCls}>Email *</label>
+        <div className="flex items-baseline justify-between mb-1">
+          <label className={labelCls} style={{ marginBottom: 0 }}>Email *</label>
+          {localStorage.getItem('user') && (
+            <button
+              type="button"
+              onClick={() => update({ firstName: '', lastName: '', email: '' })}
+              className="text-xs text-blue-500 hover:underline cursor-pointer"
+            >
+              Filling for someone else? Clear pre-filled info
+            </button>
+          )}
+        </div>
         <input
           type="email"
           className={inputCls}

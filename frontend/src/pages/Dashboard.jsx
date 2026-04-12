@@ -112,7 +112,6 @@ export default function Dashboard() {
         <div className="flex items-center gap-2">
           <span className="text-white text-xl">✚</span>
           <span className="text-white text-lg font-bold tracking-wide">MediTriage</span>
-          <Link to="/" className="text-blue-200 hover:text-white text-sm ml-6">← Intake Form</Link>
         </div>
         <div className="flex items-center gap-4">
           <span className="text-blue-200 text-sm font-medium">Doctor Dashboard</span>

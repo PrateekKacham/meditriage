@@ -6,6 +6,7 @@ import express from 'express';        // the framework that handles HTTP request
 import cors from 'cors';              // allows our React frontend to talk to this backend
 import mongoose from 'mongoose';      // connects to and communicates with MongoDB
 import intakeRoutes from './routes/intake.js'; // our intake form routes
+import authRoutes   from './routes/auth.js';   // login / auth routes
 
 const app = express();                // creates the Express application
 const PORT = process.env.PORT || 5000; // ← must be uppercase PORT, not port
@@ -23,7 +24,8 @@ app.use(express.json());
 
 // --- Routes ---
 // Any request starting with /api/intake gets handled by routes/intake.js
-app.use('/api/intake', intakeRoutes); // ← this line was missing in your version
+app.use('/api/intake', intakeRoutes);
+app.use('/api/auth',   authRoutes); // ← this line was missing in your version
 
 // --- Health check ---
 // Visit http://localhost:5000 in browser to confirm the server is running

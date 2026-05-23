@@ -29,6 +29,7 @@ The JSON must follow this exact schema:
 {
   "urgency": "<one of: Emergency | Urgent | Semi-Urgent | Non-Urgent>",
   "urgencyReason": "<1-2 sentence plain-English explanation of why this urgency level was chosen>",
+  "department": "<one of: Emergency | Cardiology | Orthopedics | Neurology | Pulmonology | Gastroenterology | General Practice | Psychiatry | Dermatology | Pediatrics>",
   "doctorSummary": "<3-5 sentence clinical summary written for the receiving physician>",
   "extractedData": {
     "primaryComplaint": "<main symptom or reason for visit>",
@@ -44,6 +45,18 @@ Urgency level definitions:
 - Urgent:       Serious but not immediately life-threatening. Needs care within hours. (e.g. high fever, broken bone)
 - Semi-Urgent:  Needs attention soon but can wait 1-2 days. (e.g. ear infection, moderate pain)
 - Non-Urgent:   Routine care. Can be scheduled normally. (e.g. mild cold, prescription refill)
+
+Department routing guide (choose the best fit for the patient's chief complaint and symptoms):
+- Emergency:         Life-threatening presentations — route here whenever urgency is "Emergency".
+- Cardiology:        Heart-related issues (chest pain w/o emergent signs, palpitations, hypertension follow-up).
+- Orthopedics:       Bones, joints, muscles, fractures, sprains, back pain.
+- Neurology:         Headaches, migraines, seizures, numbness, dizziness, stroke-like symptoms (non-emergent).
+- Pulmonology:       Breathing issues, asthma, chronic cough, COPD.
+- Gastroenterology:  Abdominal pain, GI bleeding, nausea/vomiting, reflux, bowel issues.
+- General Practice:  Routine illness, mild infections, prescription refills, anything that doesn't clearly fit a specialty.
+- Psychiatry:        Mental health, anxiety, depression, panic attacks, suicidal ideation.
+- Dermatology:       Skin rashes, lesions, suspected infections of the skin.
+- Pediatrics:        Patients under 18 with general/non-specialty complaints (specialty issues in children may still go to the specialty if clearly indicated).
 `.trim();
 
   // STEP 2 — Format the patient data into a readable "user" message
@@ -136,6 +149,7 @@ Allergies: ${allergiesList}
   return {
     urgency:       parsed.urgency,
     urgencyReason: parsed.urgencyReason,
+    department:    parsed.department,
     doctorSummary: parsed.doctorSummary,
     extractedData: parsed.extractedData,
   };

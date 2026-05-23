@@ -52,6 +52,7 @@ router.post("/", async (req, res) => {
       {
         urgency:       triageResult.urgency,
         urgencyReason: triageResult.urgencyReason,
+        department:    triageResult.department,
         doctorSummary: triageResult.doctorSummary,
         extractedData: triageResult.extractedData,
       },
@@ -142,6 +143,7 @@ router.post('/:id/retriage', async (req, res) => {
       {
         urgency:       triageResult.urgency,
         urgencyReason: triageResult.urgencyReason,
+        department:    triageResult.department,
         doctorSummary: triageResult.doctorSummary,
         extractedData: triageResult.extractedData,
       },

@@ -50,6 +50,7 @@ const IntakeSchema = new mongoose.Schema(
     // These are all null in Phase 1 — Claude will fill them in Phase 2
     urgency:       { type: String, enum: ['Emergency', 'Urgent', 'Semi-Urgent', 'Non-Urgent'], default: null },
     urgencyReason: { type: String, default: null }, // one sentence explaining why
+    department:    { type: String, default: null }, // which department the AI routed this patient to
     doctorSummary: { type: String, default: null }, // paragraph Claude generates
     extractedData: { type: mongoose.Schema.Types.Mixed, default: null }, // Claude's full JSON
     // Mixed type = can store any shape of data (object, array, etc.)

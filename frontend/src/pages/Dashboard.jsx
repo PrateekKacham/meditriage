@@ -290,12 +290,19 @@ export default function Dashboard() {
               >
                 <div className="px-5 py-4">
 
-                  {/* Name + urgency badge */}
+                  {/* Name + department + urgency badges */}
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-semibold text-gray-900">{patient.firstName} {patient.lastName}</span>
-                    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${badgeCls}`}>
-                      {patient.urgency ?? 'Unknown'}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {patient.department && (
+                        <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-300">
+                          {patient.department}
+                        </span>
+                      )}
+                      <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${badgeCls}`}>
+                        {patient.urgency ?? 'Unknown'}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Chief complaint */}

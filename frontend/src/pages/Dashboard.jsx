@@ -295,7 +295,7 @@ export default function Dashboard() {
                     <span className="font-semibold text-gray-900">{patient.firstName} {patient.lastName}</span>
                     <div className="flex items-center gap-2">
                       {patient.department && (
-                        <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-300">
+                        <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
                           {patient.department}
                         </span>
                       )}
